@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    # "browser",
+    "crates/*",
+    # "crates/modding/macros",
+    "crates/modloader/api",
+    "mods/*",
+]

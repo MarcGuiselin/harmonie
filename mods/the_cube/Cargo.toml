@@ -1,0 +1,10 @@
+[package]
+name = "the_cube"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+harmony_modding = { path = "../../crates/modding" }

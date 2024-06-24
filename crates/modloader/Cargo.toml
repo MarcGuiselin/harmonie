@@ -1,0 +1,10 @@
+[package]
+name = "harmony_modloader"
+description = "A minimal ecs runtime for harmony mods"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+harmony_modloader_api = { path = "api" }
+
+bitcode = { version = "0", features = ["derive"] }
