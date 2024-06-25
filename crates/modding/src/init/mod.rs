@@ -1,4 +1,8 @@
-use bevy_ecs::schedule::{IntoSystemConfigs, SystemConfigs};
+use bevy_ecs::{
+    schedule::{IntoSystemConfigs, SystemConfigs},
+    system::SystemParam,
+};
+use bitcode::Encode;
 
 pub struct Harmony<V: HarmonyVisitor = ()> {
     visitor: V,
@@ -46,27 +50,53 @@ impl HarmonyVisitor for () {
     }
 }
 
-pub trait Feature {
+pub trait Feature: StableId {
     fn build(&self, feature: &mut NewFeature);
 }
 
 pub struct NewFeature {
     name: &'static str,
-    resources: Vec<(&'static str, Vec<u8>)>,
-    systems: Vec<(&'static str, SystemConfigs)>,
+    resources: Vec<StableIdWithData<Vec<u8>>>,
+    systems: Vec<StableIdWithData<SystemConfigs>>,
 }
 
-pub trait HasStableId {
-    const STABLE_ID: &'static str;
+struct StableIdWithData<T> {
+    crate_name: &'static str,
+    version: &'static str,
+    name: &'static str,
+    data: T,
 }
 
-pub trait ScheduleLabel: HasStableId {
-    fn id(&self) -> &'static str {
-        Self::STABLE_ID
+impl<T> StableIdWithData<T> {
+    fn new<S: StableId>(data: T) -> StableIdWithData<T> {
+        StableIdWithData {
+            crate_name: S::CRATE_NAME,
+            version: S::VERSION,
+            name: S::NAME,
+            data,
+        }
     }
 }
 
-pub trait Resource: HasStableId + bitcode::Encode + Default {}
+/// A id shared between mods, used to identify objects defined in the manifest
+pub trait StableId {
+    const CRATE_NAME: &'static str;
+    const VERSION: &'static str;
+    const NAME: &'static str;
+
+    fn export<T>(data: T) -> StableIdWithData<T> {
+        StableIdWithData {
+            crate_name: Self::CRATE_NAME,
+            version: Self::VERSION,
+            name: Self::NAME,
+            data,
+        }
+    }
+}
+
+pub trait ScheduleLabel: StableId {}
+
+pub trait Resource: StableId + bitcode::Encode + Default {}
 
 impl NewFeature {
     pub fn set_name(&mut self, name: &'static str) -> &mut Self {
@@ -76,34 +106,90 @@ impl NewFeature {
 
     pub fn insert_resource<R: Resource>(&mut self, resource: R) -> &mut Self {
         self.resources
-            .push((R::STABLE_ID, bitcode::encode(&resource)));
+            .push(StableIdWithData::new::<R>(bitcode::encode(&resource)));
         self
     }
 
     pub fn add_systems<S: ScheduleLabel, M>(
         &mut self,
-        schedule: impl ScheduleLabel,
+        _schedule: S,
         systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self {
-        self.systems.push((schedule.id(), systems.into_configs()));
+        self.systems
+            .push(StableIdWithData::new::<S>(systems.into_configs()));
         self
     }
 }
 
 pub struct Start;
-
-impl HasStableId for Start {
-    const STABLE_ID: &'static str = "start";
+impl StableId for Start {
+    const CRATE_NAME: &'static str = "core";
+    const VERSION: &'static str = "v0.0.0";
+    const NAME: &'static str = "Start";
 }
 impl ScheduleLabel for Start {}
 
 pub struct Update;
-impl HasStableId for Update {
-    const STABLE_ID: &'static str = "update";
+impl StableId for Update {
+    const CRATE_NAME: &'static str = "core";
+    const VERSION: &'static str = "v0.0.0";
+    const NAME: &'static str = "Update";
 }
 impl ScheduleLabel for Update {}
 
-pub struct Commands<'w, 's> {
-    queue: InternalQueue<'s>,
-    entities: &'w Entities,
+#[derive(SystemParam)]
+pub struct Commands;
+
+#[link(wasm_import_module = "harmony_mod")]
+extern "C" {
+    fn command_spawn_empty() -> u32;
+    fn entity_insert_component(
+        entity_id: u32,
+        local_component_id: u32,
+        component_buffer_ptr: u32,
+        component_buffer_len: u32,
+    );
+    pub fn reserve_component_id() -> u32;
 }
+
+/// Similar to bevy_ecs::system::commands::Commands
+impl Commands {
+    pub fn spawn_empty(&mut self) -> EntityCommands {
+        let id = unsafe { command_spawn_empty() };
+        EntityCommands(id)
+    }
+}
+
+pub struct EntityCommands(u32);
+
+impl EntityCommands {
+    // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
+    pub fn insert_component<T: Component>(&mut self, component: T) -> &mut Self {
+        let component_buffer = bitcode::encode(&component);
+        unsafe {
+            entity_insert_component(
+                self.0,
+                <T as Component>::get_local_component_id(),
+                component_buffer.as_ptr() as _,
+                component_buffer.len() as _,
+            );
+        }
+        self
+    }
+
+    pub fn id(&self) -> Entity {
+        Entity(self.0)
+    }
+}
+
+/// Similar to bevy's Entity
+#[derive(Debug)]
+pub struct Entity(u32);
+
+/// Similar to bevy's Component
+pub trait Component: StableId + Encode + Decode {
+    fn get_local_component_id() -> u32;
+}
+
+pub trait Decode: for<'a> bitcode::Decode<'a> {}
+impl<T> Decode for T where T: for<'a> bitcode::Decode<'a> {}

@@ -308,6 +308,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "harmony_modding_api"
+version = "0.0.0"
+dependencies = [
+ "bitcode",
+]
+
+[[package]]
 name = "harmony_modloader"
 version = "0.0.0"
 dependencies = [
@@ -470,6 +477,14 @@ dependencies = [
 
 [[package]]
 name = "the_cube"
+version = "0.0.0"
+dependencies = [
+ "bitcode",
+ "harmony_modding",
+]
+
+[[package]]
+name = "the_cube_spinner"
 version = "0.0.0"
 dependencies = [
  "harmony_modding",

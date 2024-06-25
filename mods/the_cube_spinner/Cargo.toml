@@ -1,5 +1,5 @@
 [package]
-name = "the_cube"
+name = "the_cube_spinner"
 version = "0.0.0"
 edition = "2021"
 
@@ -9,4 +9,5 @@ crate-type = ["cdylib"]
 [dependencies]
 harmony_modding = { path = "../../crates/modding" }
 
-bitcode = { version = "0", features = ["derive"] }
+# Define mod imports here
+the_cube = { path = "../../crates/the_cube" }

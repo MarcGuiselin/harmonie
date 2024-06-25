@@ -1,6 +1,6 @@
-use harmony_modloader_api::{Command, CommandResult, Error, Response};
+use harmony_modloader_api::{Command, CommandResult, Error};
 
-#[link(wasm_import_module = "harmony")]
+#[link(wasm_import_module = "harmony_modloader")]
 extern "C" {
     fn populate_command_buffer(pointer: u32);
     fn consume_result_buffer(pointer: u32);
