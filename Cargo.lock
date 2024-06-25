@@ -488,6 +488,7 @@ name = "the_cube_spinner"
 version = "0.0.0"
 dependencies = [
  "harmony_modding",
+ "the_cube",
 ]
 
 [[package]]

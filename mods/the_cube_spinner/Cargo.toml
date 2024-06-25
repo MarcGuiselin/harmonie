@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 harmony_modding = { path = "../../crates/modding" }
 
 # Define mod imports here
-the_cube = { path = "../../crates/the_cube" }
+the_cube = { path = "../the_cube" }
