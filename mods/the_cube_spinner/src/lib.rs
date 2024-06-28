@@ -1,3 +1,4 @@
+use bevy_ecs::system::IntoSystem;
 use harmony_modding::prelude::*;
 
 fn init(engine: &mut Harmony) {
@@ -10,20 +11,17 @@ fn init(engine: &mut Harmony) {
 ///       an idea might be to always make these pub, since we always want to export these
 pub struct TheCubeSpinner;
 
-impl StableId {
-    const STABLE_ID: &str = "the_cube_spinner|v0.0.0|TheCubeSpinner|entity";
+impl StableId for TheCubeSpinner {
+    /// This is how identical features are identified between mods
+    const CRATE_NAME: &'static str = "the_cube";
+    const VERSION: &'static str = "v0.0.0";
+    const NAME: &'static str = "TheCube";
 }
 
-impl Feature for TheCube {
+impl Feature for TheCubeSpinner {
     fn build(&self, feature: &mut NewFeature) {
         feature
-            .set_name("The Cube")
-            .add_systems(Start, start)
+            .set_name("The Cube Spinner")
             .add_systems(Update, update);
     }
-}
-
-fn start(commands: &mut Commands) {
-    let entity = commands.spawn_empty().insert().id();
-    println!("Summonned a new entity {:?} with ", entity);
 }

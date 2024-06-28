@@ -83,15 +83,6 @@ pub trait StableId {
     const CRATE_NAME: &'static str;
     const VERSION: &'static str;
     const NAME: &'static str;
-
-    fn export<T>(data: T) -> StableIdWithData<T> {
-        StableIdWithData {
-            crate_name: Self::CRATE_NAME,
-            version: Self::VERSION,
-            name: Self::NAME,
-            data,
-        }
-    }
 }
 
 pub trait ScheduleLabel: StableId {}
@@ -137,24 +128,45 @@ impl StableId for Update {
 }
 impl ScheduleLabel for Update {}
 
-#[derive(SystemParam)]
 pub struct Commands;
 
-#[link(wasm_import_module = "harmony_mod")]
-extern "C" {
-    fn command_spawn_empty() -> u32;
-    fn entity_insert_component(
-        entity_id: u32,
-        local_component_id: u32,
-        component_buffer_ptr: u32,
-        component_buffer_len: u32,
-    );
-    pub fn reserve_component_id() -> u32;
+// Implementing these traits to leverage bevy's system traits
+//
+// Since commands are executed using wasm exports, we don't care about maintaining state
+//
+// OPTIMIZATION: Consider eventually using our own custom traits for this kind of thing
+//
+// SAFETY: Never accesses World
+unsafe impl bevy_ecs::system::SystemParam for Commands {
+    type State = ();
+    type Item<'w, 's> = Commands;
+    fn init_state(
+        _world: &mut bevy_ecs::world::World,
+        _system_meta: &mut bevy_ecs::system::SystemMeta,
+    ) -> Self::State {
+        ()
+    }
+
+    unsafe fn get_param<'w, 's>(
+        _state: &'s mut Self::State,
+        _system_meta: &bevy_ecs::system::SystemMeta,
+        _world: bevy_ecs::world::unsafe_world_cell::UnsafeWorldCell<'w>,
+        _change_tick: bevy_ecs::component::Tick,
+    ) -> Self::Item<'w, 's> {
+        Commands
+    }
 }
+// SAFETY: Never accesses World
+unsafe impl bevy_ecs::system::ReadOnlySystemParam for Commands {}
 
 /// Similar to bevy_ecs::system::commands::Commands
 impl Commands {
     pub fn spawn_empty(&mut self) -> EntityCommands {
+        #[link(wasm_import_module = "harmony_mod")]
+        extern "C" {
+            fn command_spawn_empty() -> u32;
+        }
+
         let id = unsafe { command_spawn_empty() };
         EntityCommands(id)
     }
@@ -165,6 +177,16 @@ pub struct EntityCommands(u32);
 impl EntityCommands {
     // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
     pub fn insert_component<T: Component>(&mut self, component: T) -> &mut Self {
+        #[link(wasm_import_module = "harmony_mod")]
+        extern "C" {
+            fn entity_insert_component(
+                entity_id: u32,
+                local_component_id: u32,
+                component_buffer_ptr: u32,
+                component_buffer_len: u32,
+            );
+        }
+
         let component_buffer = bitcode::encode(&component);
         unsafe {
             entity_insert_component(

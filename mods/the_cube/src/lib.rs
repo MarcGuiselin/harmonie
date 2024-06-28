@@ -39,10 +39,15 @@ impl StableId for Cube {
 static mut LOCAL_COMPONENT_ID_FOR_CUBE: Option<u32> = None;
 impl Component for Cube {
     fn get_local_component_id() -> u32 {
+        #[link(wasm_import_module = "harmony_mod")]
+        extern "C" {
+            pub fn reserve_component_id() -> u32;
+        }
+
         // SAFETY: Mods run single-threaded
         unsafe {
             LOCAL_COMPONENT_ID_FOR_CUBE.unwrap_or_else(|| {
-                let id = harmony_modding::init::reserve_component_id();
+                let id = reserve_component_id();
                 LOCAL_COMPONENT_ID_FOR_CUBE = Some(id);
                 id
             })
@@ -57,15 +62,15 @@ fn start(
 ) {
     let entity = commands
         .spawn_empty()
-        .insert_component(Transform)
+        //.insert_component(Transform)
         .insert_component(Cube)
         .id();
     println!("Summonned a new entity {:?} with ", entity);
 }
 
-/// From bevy's `examples\3d\3d_shapes.rs`
-fn update(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
-    for mut transform in &mut query {
-        transform.rotate_y(time.delta_seconds() / 2.);
-    }
-}
+// From bevy's `examples\3d\3d_shapes.rs`
+// fn update(mut query: Query<&mut Transform, With<Shape>>, time: Res<Time>) {
+//     for mut transform in &mut query {
+//         transform.rotate_y(time.delta_seconds() / 2.);
+//     }
+// }
