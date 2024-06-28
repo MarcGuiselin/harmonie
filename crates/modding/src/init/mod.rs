@@ -128,36 +128,8 @@ impl StableId for Update {
 }
 impl ScheduleLabel for Update {}
 
+#[derive(SystemParam)]
 pub struct Commands;
-
-// Implementing these traits to leverage bevy's system traits
-//
-// Since commands are executed using wasm exports, we don't care about maintaining state
-//
-// OPTIMIZATION: Consider eventually using our own custom traits for this kind of thing
-//
-// SAFETY: Never accesses World
-unsafe impl bevy_ecs::system::SystemParam for Commands {
-    type State = ();
-    type Item<'w, 's> = Commands;
-    fn init_state(
-        _world: &mut bevy_ecs::world::World,
-        _system_meta: &mut bevy_ecs::system::SystemMeta,
-    ) -> Self::State {
-        ()
-    }
-
-    unsafe fn get_param<'w, 's>(
-        _state: &'s mut Self::State,
-        _system_meta: &bevy_ecs::system::SystemMeta,
-        _world: bevy_ecs::world::unsafe_world_cell::UnsafeWorldCell<'w>,
-        _change_tick: bevy_ecs::component::Tick,
-    ) -> Self::Item<'w, 's> {
-        Commands
-    }
-}
-// SAFETY: Never accesses World
-unsafe impl bevy_ecs::system::ReadOnlySystemParam for Commands {}
 
 /// Similar to bevy_ecs::system::commands::Commands
 impl Commands {
