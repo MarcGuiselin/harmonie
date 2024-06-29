@@ -484,7 +484,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "the_cube_spinner"
+name = "the_cube_mover"
 version = "0.0.0"
 dependencies = [
  "harmony_modding",

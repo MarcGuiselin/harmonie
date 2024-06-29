@@ -1,6 +1,6 @@
 use harmony_modding::prelude::*;
 
-fn init(engine: &mut Harmony) {
+pub fn init(engine: &mut Harmony) {
     engine.add_feature(TheCube);
 }
 
@@ -65,7 +65,11 @@ fn start(
         //.insert_component(Transform)
         .insert_component(Cube)
         .id();
-    println!("Summonned a new entity {:?} with ", entity);
+    println!("Summoned a new entity {:?} with ", entity);
+}
+
+fn update() {
+    println!("TODO: spin the cube");
 }
 
 // From bevy's `examples\3d\3d_shapes.rs`

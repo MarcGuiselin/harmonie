@@ -1,7 +1,6 @@
-use bevy_ecs::system::IntoSystem;
 use harmony_modding::prelude::*;
 
-fn init(engine: &mut Harmony) {
+pub fn init(engine: &mut Harmony) {
     engine.add_feature(TheCubeSpinner);
 }
 
@@ -24,4 +23,8 @@ impl Feature for TheCubeSpinner {
             .set_name("The Cube Spinner")
             .add_systems(Update, update);
     }
+}
+
+fn update() {
+    println!("TODO: move cube");
 }
