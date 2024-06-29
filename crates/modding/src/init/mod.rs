@@ -4,7 +4,10 @@ use bevy_ecs::{
 };
 use bitcode::Encode;
 
-pub struct Harmony<V: HarmonyVisitor = ()> {
+pub struct Harmony<V = ()>
+where
+    V: HarmonyVisitor,
+{
     visitor: V,
 }
 
@@ -85,9 +88,17 @@ pub trait StableId {
     const NAME: &'static str;
 }
 
-pub trait ScheduleLabel: StableId {}
+pub trait ScheduleLabel
+where
+    Self: StableId,
+{
+}
 
-pub trait Resource: StableId + bitcode::Encode + Default {}
+pub trait Resource
+where
+    Self: StableId + bitcode::Encode + Default,
+{
+}
 
 impl NewFeature {
     pub fn set_name(&mut self, name: &'static str) -> &mut Self {
@@ -181,9 +192,16 @@ impl EntityCommands {
 pub struct Entity(u32);
 
 /// Similar to bevy's Component
-pub trait Component: StableId + Encode + Decode {
+pub trait Component
+where
+    Self: StableId + Encode + Decode,
+{
     fn get_local_component_id() -> u32;
 }
 
-pub trait Decode: for<'a> bitcode::Decode<'a> {}
+pub trait Decode
+where
+    Self: for<'a> bitcode::Decode<'a>,
+{
+}
 impl<T> Decode for T where T: for<'a> bitcode::Decode<'a> {}
