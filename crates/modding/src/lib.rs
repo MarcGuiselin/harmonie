@@ -1,3 +1,5 @@
+#![allow(dead_code)] // TODO: remove
+
 pub mod ecs;
 pub mod init;
 
