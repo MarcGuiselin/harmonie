@@ -304,7 +304,9 @@ name = "harmony_modding"
 version = "0.0.0"
 dependencies = [
  "bevy_ecs",
+ "bevy_utils",
  "bitcode",
+ "harmony_modding_api",
 ]
 
 [[package]]

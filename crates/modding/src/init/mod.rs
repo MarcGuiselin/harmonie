@@ -1,8 +1,7 @@
-use bevy_ecs::{
-    schedule::{IntoSystemConfigs, SystemConfigs},
-    system::SystemParam,
-};
+use crate::ecs::IntoDescriptors;
+use bevy_ecs::system::SystemParam;
 use bitcode::Encode;
+use harmony_modding_api::Descriptor;
 
 pub struct Harmony<V = ()>
 where
@@ -60,7 +59,7 @@ pub trait Feature: StableId {
 pub struct NewFeature {
     name: &'static str,
     resources: Vec<StableIdWithData<Vec<u8>>>,
-    systems: Vec<StableIdWithData<SystemConfigs>>,
+    systems: Vec<StableIdWithData<Vec<Descriptor>>>,
 }
 
 struct StableIdWithData<T> {
@@ -115,10 +114,10 @@ impl NewFeature {
     pub fn add_systems<S: ScheduleLabel, M>(
         &mut self,
         _schedule: S,
-        systems: impl IntoSystemConfigs<M>,
+        systems: impl IntoDescriptors<M>,
     ) -> &mut Self {
         self.systems
-            .push(StableIdWithData::new::<S>(systems.into_configs()));
+            .push(StableIdWithData::new::<S>(systems.into_descriptors()));
         self
     }
 }

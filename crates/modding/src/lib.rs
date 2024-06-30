@@ -1,3 +1,4 @@
+pub mod ecs;
 pub mod init;
 
 pub mod prelude {

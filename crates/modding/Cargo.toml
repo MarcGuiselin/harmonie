@@ -4,7 +4,8 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-# harmony_modding_macros = { path = "macros", version = "0.0.0" }
+harmony_modding_api = { path = "api" }
 
 bitcode = { version = "0", features = ["derive"] }
 bevy_ecs = { version = "0.14.0-rc.3" }
+bevy_utils = { version = "0.14.0-rc.3" }
