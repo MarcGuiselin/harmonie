@@ -1,4 +1,4 @@
-use bevy_ecs::system::IntoSystem;
+use super::IntoSystem;
 use bevy_utils::all_tuples;
 use harmony_modding_api::Descriptor;
 
@@ -35,7 +35,7 @@ impl<Marker, F> IntoDescriptors<Marker> for F
 where
     F: IntoSystem<(), (), Marker>,
 {
-    fn into_descriptors(&self) -> Vec<Self> {
+    fn into_descriptors(self) -> Vec<Descriptor> {
         vec![]
     }
 }
