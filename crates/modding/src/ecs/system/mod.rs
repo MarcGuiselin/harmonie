@@ -4,10 +4,10 @@ mod params;
 mod system;
 mod system_param;
 
-pub use descriptor::IntoDescriptors;
+pub use descriptor::{Descriptors, IntoDescriptors};
 pub use function_system::FunctionSystem;
 pub use params::*;
-pub use system::System;
+pub use system::{BoxedSystem, ParamDescriptors, System};
 pub use system_param::SystemParam;
 
 #[diagnostic::on_unimplemented(

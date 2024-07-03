@@ -1,3 +1,5 @@
+use harmony_modding_api as api;
+
 #[diagnostic::on_unimplemented(message = "`{Self}` is not a system", label = "invalid system")]
 pub trait System: Send + Sync + 'static {
     /// The system's input. See [`In`](crate::system::In) for
@@ -12,4 +14,12 @@ pub trait System: Send + Sync + 'static {
 
     /// Runs the system with the given input
     fn run(&mut self, input: Self::In) -> Self::Out;
+
+    /// List of [`api::ParamDescriptor`]s that this system has.
+    fn param_descriptors(&self) -> ParamDescriptors;
 }
+
+pub type ParamDescriptors = Vec<api::ParamDescriptor>;
+
+/// A convenience type alias for a boxed [`System`] trait object.
+pub type BoxedSystem<In = (), Out = ()> = Box<dyn System<In = In, Out = Out>>;

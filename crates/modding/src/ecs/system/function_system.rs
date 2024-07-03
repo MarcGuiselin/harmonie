@@ -1,6 +1,7 @@
+use super::{
+    system::ParamDescriptors, system_param::SystemParamItem, In, IntoSystem, System, SystemParam,
+};
 use bevy_utils::all_tuples;
-
-use super::{system_param::SystemParamItem, In, IntoSystem, System, SystemParam};
 use std::marker::PhantomData;
 
 /// The [`System`] counter part of an ordinary function.
@@ -19,6 +20,7 @@ where
 {
     func: F,
     param_state: <F::Param as SystemParam>::State,
+    param_descriptors: ParamDescriptors,
     name: &'static str,
     // NOTE: PhantomData<fn()-> T> gives this safe Send/Sync impls
     marker: PhantomData<fn() -> Marker>,
@@ -97,7 +99,8 @@ where
     fn into_system(func: Self) -> Self::System {
         FunctionSystem {
             func,
-            param_state: <F::Param as SystemParam>::init_state(),
+            param_state: F::Param::init_state(),
+            param_descriptors: F::Param::get_descriptors(),
             name: std::any::type_name::<F>(),
             marker: PhantomData,
         }
@@ -122,6 +125,11 @@ where
         let params = F::Param::get_param(&mut self.param_state);
         let out = self.func.run(input, params);
         out
+    }
+
+    #[inline]
+    fn param_descriptors(&self) -> ParamDescriptors {
+        self.param_descriptors.clone()
     }
 }
 

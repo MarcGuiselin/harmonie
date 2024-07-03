@@ -1,4 +1,8 @@
-use crate::ecs::{system::SystemParam, Component};
+use crate::ecs::{
+    system::{ParamDescriptors, SystemParam},
+    Component,
+};
+use harmony_modding_api as api;
 
 pub struct Commands;
 impl SystemParam for Commands {
@@ -8,8 +12,13 @@ impl SystemParam for Commands {
     fn init_state() -> Self::State {
         ()
     }
+
     fn get_param<'state>(_state: &'state mut Self::State) -> Self::Item<'state> {
         Commands
+    }
+
+    fn get_descriptors() -> ParamDescriptors {
+        vec![api::ParamDescriptor::Command]
     }
 }
 

@@ -1,5 +1,7 @@
-use crate::ecs::{system::IntoDescriptors, StableId, StableIdWithData};
-use harmony_modding_api::Descriptor;
+use crate::ecs::{
+    system::{Descriptors, IntoDescriptors},
+    StableId, StableIdWithData,
+};
 
 pub struct Harmony<V = ()>
 where
@@ -57,7 +59,7 @@ pub trait Feature: StableId {
 pub struct NewFeature {
     name: &'static str,
     resources: Vec<StableIdWithData<Vec<u8>>>,
-    systems: Vec<StableIdWithData<Vec<Descriptor>>>,
+    descriptors: Descriptors,
 }
 
 pub trait ScheduleLabel
@@ -89,8 +91,8 @@ impl NewFeature {
         _schedule: S,
         systems: impl IntoDescriptors<M>,
     ) -> &mut Self {
-        self.systems
-            .push(StableIdWithData::new::<S>(systems.into_descriptors()));
+        self.descriptors
+            .push(&mut IntoDescriptors::into_descriptors(systems));
         self
     }
 }

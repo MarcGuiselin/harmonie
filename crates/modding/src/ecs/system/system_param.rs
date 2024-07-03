@@ -1,3 +1,4 @@
+use super::system::ParamDescriptors;
 use bevy_utils::all_tuples;
 
 pub trait SystemParam: Sized {
@@ -15,6 +16,9 @@ pub trait SystemParam: Sized {
 
     /// Creates a parameter to be passed into a [`SystemParamFunction`].
     fn get_param<'state>(state: &'state mut Self::State) -> Self::Item<'state>;
+
+    /// Returns a descriptor for this param
+    fn get_descriptors() -> ParamDescriptors;
 }
 
 /// Shorthand way of accessing the associated type [`SystemParam::Item`] for a given [`SystemParam`].
@@ -39,6 +43,12 @@ macro_rules! impl_system_param_tuple {
             ) -> Self::Item<'s> {
                 let ($($param,)*) = state;
                 ($($param::get_param($param),)*)
+            }
+
+            #[inline]
+            fn get_descriptors() -> ParamDescriptors {
+                let vec: Vec<ParamDescriptors> = vec![$($param::get_descriptors(),)*];
+                vec.into_iter().flatten().collect()
             }
         }
     };
