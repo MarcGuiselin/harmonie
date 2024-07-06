@@ -18,7 +18,7 @@ impl StableId for TheCubeSpinner {
 }
 
 impl Feature for TheCubeSpinner {
-    fn build(&self, feature: &mut NewFeature) {
+    fn build(&self, feature: &mut FeatureBuilder) {
         feature
             .set_name("The Cube Spinner")
             .add_systems(Update, update);

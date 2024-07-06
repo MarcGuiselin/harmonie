@@ -14,21 +14,3 @@ pub trait StableId {
         }
     }
 }
-
-pub struct StableIdWithData<T> {
-    crate_name: &'static str,
-    version: &'static str,
-    name: &'static str,
-    pub data: T,
-}
-
-impl<T> StableIdWithData<T> {
-    pub fn new<S: StableId>(data: T) -> StableIdWithData<T> {
-        StableIdWithData {
-            crate_name: S::CRATE_NAME,
-            version: S::VERSION,
-            name: S::NAME,
-            data,
-        }
-    }
-}

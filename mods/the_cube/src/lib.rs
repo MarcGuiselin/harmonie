@@ -18,7 +18,7 @@ impl StableId for TheCube {
 }
 
 impl Feature for TheCube {
-    fn build(&self, feature: &mut NewFeature) {
+    fn build(&self, feature: &mut FeatureBuilder) {
         feature
             .set_name("The Cube")
             .add_systems(Start, start)

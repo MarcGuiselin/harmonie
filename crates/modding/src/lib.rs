@@ -4,6 +4,6 @@ pub mod ecs;
 pub mod init;
 
 pub mod prelude {
-    pub use crate::ecs::{system::Commands, Component, StableId};
-    pub use crate::init::{Feature, Harmony, NewFeature, Start, Update};
+    pub use crate::ecs::{system::Commands, Component, StableId, Start, Update};
+    pub use crate::init::{Feature, FeatureBuilder, Harmony};
 }
