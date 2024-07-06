@@ -6,10 +6,10 @@ use std::{
 
 /// Identify structs
 #[derive(Encode, Decode, PartialEq, Debug, Hash)]
-struct StableId<'a> {
-    crate_name: &'a str,
-    version: &'a str,
-    name: &'a str,
+pub struct StableId<'a> {
+    pub crate_name: &'a str,
+    pub version: &'a str,
+    pub name: &'a str,
 }
 
 /// Identify systems
@@ -44,12 +44,26 @@ pub struct SystemDescriptor {
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
+pub enum SetIndices {
+    System(usize),
+    Sets(Vec<usize>),
+}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
 pub struct SetDescriptor {
-    pub systems: Vec<SystemId>,
+    pub indices: SetIndices,
+    // TODO: run conditions, order, etc
 }
 
 #[derive(Encode, Decode, PartialEq, Debug, Clone)]
 pub enum ParamDescriptor {
     Command,
     // TODO: Query, Res, ResMut, etc
+}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub struct ScheduleDescriptor<'a> {
+    schedule: StableId<'a>,
+    systems: Vec<SystemDescriptor>,
+    sets: Vec<SetDescriptor>,
 }

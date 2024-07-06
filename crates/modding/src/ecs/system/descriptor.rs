@@ -16,14 +16,48 @@ impl Descriptors {
         }
     }
 
-    pub fn push(&mut self, descriptors: &mut Self) {
-        self.systems.append(&mut descriptors.systems);
-        self.sets.append(&mut descriptors.sets);
+    pub fn push(&mut self, descriptors: Self) {
+        let Self {
+            mut systems,
+            mut sets,
+        } = descriptors;
+
+        for set in sets.iter_mut() {
+            match &mut set.indices {
+                api::SetIndices::System(index) => {
+                    *index += self.systems.len();
+                }
+                api::SetIndices::Sets(indexes) => {
+                    for index in indexes.iter_mut() {
+                        *index += self.sets.len();
+                    }
+                }
+            };
+        }
+
+        self.systems.append(&mut systems);
+        self.sets.append(&mut sets);
     }
 
-    pub fn append(&mut self, descriptors: &mut Vec<Self>) {
-        descriptors.iter_mut().for_each(|descriptors| {
+    pub fn append_set(&mut self, descriptors: Vec<Self>) {
+        let mut offset = 0;
+        let sets = descriptors
+            .iter()
+            .filter_map(|descriptors| {
+                if descriptors.sets.is_empty() {
+                    None
+                } else {
+                    offset += descriptors.sets.len();
+                    Some(offset - 1)
+                }
+            })
+            .collect();
+
+        descriptors.into_iter().for_each(|descriptors| {
             self.push(descriptors);
+        });
+        self.sets.push(api::SetDescriptor {
+            indices: api::SetIndices::Sets(sets),
         });
     }
 }
@@ -48,7 +82,7 @@ macro_rules! impl_system_collection {
                 let mut descriptors = Descriptors::empty();
 
                 let ($($sys,)*) = self;
-                descriptors.append(&mut vec![$($sys.into_descriptors()),*]);
+                descriptors.append_set(vec![$($sys.into_descriptors()),*]);
 
                 descriptors
             }
@@ -63,16 +97,16 @@ where
     F: 'static + IntoSystem<(), (), Marker>,
 {
     fn into_descriptors(self) -> Descriptors {
-        let mut descriptors = Descriptors::empty();
-
         let id = api::SystemId::from_type::<F::System>();
         let system = IntoSystem::into_system(self);
         let params = system.param_descriptors();
         let executor = Box::new(system);
-        descriptors
-            .systems
-            .push((api::SystemDescriptor { id, params }, executor));
 
-        descriptors
+        Descriptors {
+            systems: vec![(api::SystemDescriptor { id, params }, executor)],
+            sets: vec![api::SetDescriptor {
+                indices: api::SetIndices::System(0),
+            }],
+        }
     }
 }
