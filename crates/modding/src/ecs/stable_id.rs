@@ -9,8 +9,8 @@ pub trait StableId {
     fn get_stable_id(&self) -> api::StableId<'static> {
         api::StableId {
             crate_name: Self::CRATE_NAME,
-            version: Self::CRATE_NAME,
-            name: Self::CRATE_NAME,
+            version: Self::VERSION,
+            name: Self::NAME,
         }
     }
 }
