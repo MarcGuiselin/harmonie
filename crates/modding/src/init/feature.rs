@@ -14,6 +14,16 @@ pub struct FeatureBuilder {
     pub(crate) descriptors: Vec<(api::StableId<'static>, Descriptors)>,
 }
 
+impl std::fmt::Debug for FeatureBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("FeatureBuilder")
+            .field("name", &self.name)
+            .field("resources", &self.resources)
+            .field("descriptors", &self.descriptors)
+            .finish()
+    }
+}
+
 impl FeatureBuilder {
     pub fn set_name(&mut self, name: &'static str) -> &mut Self {
         self.name = name;

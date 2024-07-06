@@ -12,6 +12,14 @@ pub struct Harmony {
     features: Vec<FeatureBuilder>,
 }
 
+impl std::fmt::Debug for Harmony {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Harmony")
+            .field("features", &self.features)
+            .finish()
+    }
+}
+
 impl Harmony {
     pub fn add_feature<F: Feature>(&mut self, feature: F) -> &mut Self {
         let mut builder = FeatureBuilder {

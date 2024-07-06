@@ -8,6 +8,22 @@ pub struct Descriptors {
     sets: Vec<api::SetDescriptor>,
 }
 
+impl std::fmt::Debug for Descriptors {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Descriptors")
+            .field(
+                "systems",
+                &self
+                    .systems
+                    .iter()
+                    .map(|(desc, _)| desc)
+                    .collect::<Vec<_>>(),
+            )
+            .field("sets", &self.sets)
+            .finish()
+    }
+}
+
 impl Descriptors {
     pub fn empty() -> Self {
         Self {
@@ -83,6 +99,8 @@ macro_rules! impl_system_collection {
 
                 let ($($sys,)*) = self;
                 descriptors.append_set(vec![$($sys.into_descriptors()),*]);
+
+                // This is where I planned to add to sets
 
                 descriptors
             }
