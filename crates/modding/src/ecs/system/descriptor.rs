@@ -1,11 +1,11 @@
 use super::{BoxedSystem, IntoSystem, System};
-use bevy_utils::all_tuples;
+use bevy_utils_proc_macros::all_tuples;
 use harmony_modding_api as api;
 
 /// Describes a feature's systems and what sets these belong to in order for the modloader know how to schedule and query data for them
 pub struct Descriptors {
-    systems: Vec<(api::SystemDescriptor, BoxedSystem)>,
-    sets: Vec<api::SetDescriptor>,
+    pub(crate) systems: Vec<(api::SystemDescriptor, BoxedSystem)>,
+    pub(crate) sets: Vec<api::SetDescriptor>,
 }
 
 impl std::fmt::Debug for Descriptors {

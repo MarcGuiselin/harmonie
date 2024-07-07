@@ -1,5 +1,5 @@
 use super::system::ParamDescriptors;
-use bevy_utils::all_tuples;
+use bevy_utils_proc_macros::all_tuples;
 
 pub trait SystemParam: Sized {
     /// Used to store data which persists across invocations of a system.

@@ -1,6 +1,24 @@
 use harmony_modding::prelude::*;
 
-pub fn init(engine: &mut Harmony) {
+#[no_mangle]
+#[doc(hidden)]
+#[cfg(feature = "generate_manifest")]
+pub extern "C" fn harmony_mod_generate_manifest() {
+    let mut engine = harmony_modding::init::__internal_new_engine();
+    init(&mut engine);
+    harmony_modding::init::__internal_generate_manifest(engine);
+}
+
+#[no_mangle]
+#[doc(hidden)]
+#[cfg(not(feature = "generate_manifest"))]
+pub extern "C" fn harmony_mod_init() {
+    let mut engine = harmony_modding::init::__internal_new_engine();
+    init(&mut engine);
+    harmony_modding::init::__internal_initialize_runtime(engine);
+}
+
+fn init(engine: &mut Harmony) {
     engine.add_feature(TheCube);
 }
 

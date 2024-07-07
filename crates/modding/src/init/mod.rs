@@ -32,3 +32,16 @@ impl Harmony {
         self
     }
 }
+
+#[doc(hidden)]
+pub fn __internal_new_engine() -> Harmony {
+    Harmony { features: vec![] }
+}
+
+#[doc(hidden)]
+pub fn __internal_initialize_runtime(_: Harmony) {
+    unimplemented!()
+}
+
+mod manifest;
+pub use manifest::*;

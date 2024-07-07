@@ -24,6 +24,7 @@ impl SystemParam for Commands {
 
 /// Similar to bevy_ecs::system::commands::Commands
 impl Commands {
+    #[cfg(not(feature = "generate_manifest"))]
     pub fn spawn_empty(&mut self) -> EntityCommands {
         #[link(wasm_import_module = "harmony_mod")]
         extern "C" {
@@ -33,12 +34,18 @@ impl Commands {
         let id = unsafe { command_spawn_empty() };
         EntityCommands(id)
     }
+
+    #[cfg(feature = "generate_manifest")]
+    pub fn spawn_empty(&mut self) -> EntityCommands {
+        unreachable!()
+    }
 }
 
 pub struct EntityCommands(u32);
 
 impl EntityCommands {
     // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
+    #[cfg(not(feature = "generate_manifest"))]
     pub fn insert_component<T: Component>(&mut self, component: T) -> &mut Self {
         #[link(wasm_import_module = "harmony_mod")]
         extern "C" {
@@ -60,6 +67,11 @@ impl EntityCommands {
             );
         }
         self
+    }
+
+    #[cfg(feature = "generate_manifest")]
+    pub fn insert_component<T: Component>(&mut self, _: T) -> &mut Self {
+        unreachable!()
     }
 
     pub fn id(&self) -> Entity {

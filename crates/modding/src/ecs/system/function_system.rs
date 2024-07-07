@@ -1,7 +1,7 @@
 use super::{
     system::ParamDescriptors, system_param::SystemParamItem, In, IntoSystem, System, SystemParam,
 };
-use bevy_utils::all_tuples;
+use bevy_utils_proc_macros::all_tuples;
 use std::marker::PhantomData;
 
 /// The [`System`] counter part of an ordinary function.

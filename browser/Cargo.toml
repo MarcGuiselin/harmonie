@@ -1,0 +1,13 @@
+[package]
+name = "harmony_browser"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitcode = { version = "0", features = ["derive"] }
+tokio = { version = "1.38.0", features = ["full"] }
+wasmer = "4.3.3"
+
+harmony_modding_api = { path = "../crates/modding/api" }

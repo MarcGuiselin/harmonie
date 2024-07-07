@@ -10,3 +10,8 @@ crate-type = ["cdylib"]
 harmony_modding = { path = "../../crates/modding" }
 
 bitcode = { version = "0", features = ["derive"] }
+
+[features]
+# this feature is used for production builds
+# DO NOT REMOVE!!
+generate_manifest = ["harmony_modding/generate_manifest"]

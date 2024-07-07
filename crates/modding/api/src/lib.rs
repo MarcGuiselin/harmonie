@@ -4,6 +4,9 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
+mod utils;
+pub use utils::*;
+
 /// Identify structs
 #[derive(Encode, Decode, PartialEq, Debug, Hash)]
 pub struct StableId<'a> {
@@ -63,7 +66,19 @@ pub enum ParamDescriptor {
 
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct ScheduleDescriptor<'a> {
-    schedule: StableId<'a>,
-    systems: Vec<SystemDescriptor>,
-    sets: Vec<SetDescriptor>,
+    pub id: StableId<'a>,
+    pub systems: Vec<SystemDescriptor>,
+    pub sets: Vec<SetDescriptor>,
+}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub struct FeatureDescriptor<'a> {
+    pub name: &'a str,
+    pub resources: Vec<(StableId<'a>, Vec<u8>)>,
+    pub descriptors: Vec<ScheduleDescriptor<'a>>,
+}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub struct ModManifest<'a> {
+    pub features: Vec<FeatureDescriptor<'a>>,
 }

@@ -7,4 +7,7 @@ edition = "2021"
 harmony_modding_api = { path = "api" }
 
 bitcode = { version = "0", features = ["derive"] }
-bevy_utils = { version = "0.14.0-rc.3" }
+bevy_utils_proc_macros = { version = "0.14.0-rc.3" }
+
+[features]
+generate_manifest = []
