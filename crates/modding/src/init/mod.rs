@@ -1,6 +1,11 @@
 mod feature;
 pub use feature::*;
 
+mod manifest;
+pub use manifest::*;
+mod runtime;
+pub use runtime::*;
+
 /// Access to the Harmony engine in order to add new features and mod existing ones
 ///
 /// This done within the init function.
@@ -37,11 +42,3 @@ impl Harmony {
 pub fn __internal_new_engine() -> Harmony {
     Harmony { features: vec![] }
 }
-
-#[doc(hidden)]
-pub fn __internal_initialize_runtime(_: Harmony) {
-    unimplemented!()
-}
-
-mod manifest;
-pub use manifest::*;

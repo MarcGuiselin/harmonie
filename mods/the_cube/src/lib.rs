@@ -12,10 +12,17 @@ pub extern "C" fn harmony_mod_generate_manifest() {
 #[no_mangle]
 #[doc(hidden)]
 #[cfg(not(feature = "generate_manifest"))]
-pub extern "C" fn harmony_mod_init() {
+pub extern "C" fn harmony_mod_initialize_runtime() {
     let mut engine = harmony_modding::init::__internal_new_engine();
     init(&mut engine);
     harmony_modding::init::__internal_initialize_runtime(engine);
+}
+
+#[no_mangle]
+#[doc(hidden)]
+#[cfg(not(feature = "generate_manifest"))]
+pub unsafe extern "C" fn harmony_mod_run_system(index: u32) {
+    harmony_modding::init::__internal_run_system(index as _);
 }
 
 fn init(engine: &mut Harmony) {
