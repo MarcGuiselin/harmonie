@@ -2,7 +2,7 @@ use crate::ecs::{
     system::{Descriptors, IntoDescriptors},
     Resource, ScheduleLabel, StableId,
 };
-use harmony_modding_api as api;
+use harmony_modloader_api as api;
 
 pub trait Feature: StableId {
     fn build(&self, feature: &mut FeatureBuilder);

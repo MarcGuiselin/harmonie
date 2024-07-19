@@ -2,7 +2,7 @@ use crate::ecs::{
     system::{ParamDescriptors, SystemParam},
     Component,
 };
-use harmony_modding_api as api;
+use harmony_modloader_api as api;
 
 pub struct Commands;
 impl SystemParam for Commands {

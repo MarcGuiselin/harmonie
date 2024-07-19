@@ -3,8 +3,8 @@ resolver = "2"
 members = [
     "browser",
     "crates/*",
-    "crates/modding/api",
     # "crates/modding/macros",
     "crates/modloader/api",
+    "crates/modloader/build",
     "mods/*",
 ]

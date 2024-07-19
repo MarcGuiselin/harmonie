@@ -1,0 +1,13 @@
+[package]
+name = "harmony_modloader_build"
+description = "Builds mods and prepares them for use by the modloader"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+harmony_modloader_api = { path = "./../api" }
+
+bitcode = { version = "0", features = ["derive"] }
+tokio = { version = "1.38.0", features = ["full"] }
+wasmer = "4.3.3"
+futures = "0.3.30"

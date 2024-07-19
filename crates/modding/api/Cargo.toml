@@ -1,8 +1,0 @@
-[package]
-name = "harmony_modding_api"
-description = "API for communicating with a Harmony Mod. This is used by the modloader and the modding library."
-version = "0.0.0"
-edition = "2021"
-
-[dependencies]
-bitcode = { version = "0", features = ["derive"] }

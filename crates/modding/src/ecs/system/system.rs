@@ -1,4 +1,4 @@
-use harmony_modding_api as api;
+use harmony_modloader_api as api;
 
 #[diagnostic::on_unimplemented(message = "`{Self}` is not a system", label = "invalid system")]
 pub trait System: Send + Sync + 'static {

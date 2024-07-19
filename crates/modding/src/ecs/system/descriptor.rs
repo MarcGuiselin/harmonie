@@ -1,6 +1,6 @@
 use super::{BoxedSystem, IntoSystem, System};
 use bevy_utils_proc_macros::all_tuples;
-use harmony_modding_api as api;
+use harmony_modloader_api as api;
 
 /// Describes a feature's systems and what sets these belong to in order for the modloader know how to schedule and query data for them
 pub struct Descriptors {

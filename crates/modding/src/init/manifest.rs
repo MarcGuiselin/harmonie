@@ -8,7 +8,7 @@ use super::Harmony;
 pub fn __internal_generate_manifest(harmony: Harmony) {
     use super::FeatureBuilder;
     use crate::ecs::system::Descriptors;
-    use harmony_modding_api as api;
+    use harmony_modloader_api as api;
 
     fn new_descriptor(
         (id, descriptor): (api::StableId<'static>, Descriptors),

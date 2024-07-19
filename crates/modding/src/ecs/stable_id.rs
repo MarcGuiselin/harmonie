@@ -1,4 +1,4 @@
-use harmony_modding_api as api;
+use harmony_modloader_api as api;
 
 /// A id shared between mods, used to identify objects defined in the manifest
 pub trait StableId {

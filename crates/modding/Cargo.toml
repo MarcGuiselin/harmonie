@@ -4,7 +4,7 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-harmony_modding_api = { path = "api" }
+harmony_modloader_api = { path = "../modloader/api" }
 
 bitcode = { version = "0", features = ["derive"] }
 bevy_utils_proc_macros = { version = "0.14.0-rc.3" }

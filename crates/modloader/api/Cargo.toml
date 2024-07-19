@@ -1,6 +1,6 @@
 [package]
 name = "harmony_modloader_api"
-description = "API for communicating with Harmony ModLoader. This is used by the modloader itself and the browser."
+description = "API for communicating with a Harmony Mod. This is used by the modloader and the modding library."
 version = "0.0.0"
 edition = "2021"
 

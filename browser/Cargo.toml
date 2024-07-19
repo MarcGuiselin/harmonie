@@ -10,4 +10,5 @@ bitcode = { version = "0", features = ["derive"] }
 tokio = { version = "1.38.0", features = ["full"] }
 wasmer = "4.3.3"
 
-harmony_modding_api = { path = "../crates/modding/api" }
+harmony_modloader_api = { path = "../crates/modloader/api" }
+harmony_modloader_build = { path = "../crates/modloader/build" }
