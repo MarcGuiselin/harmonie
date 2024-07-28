@@ -1,0 +1,4 @@
+[submodule "bevy"]
+	path = bevy
+	url = https://github.com/bevyengine/bevy
+	branch = release-0.14.0
