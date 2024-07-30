@@ -6,9 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bitcode = { version = "0", features = ["derive"] }
-tokio = { version = "1.38.0", features = ["full"] }
-wasmer = "4.3.3"
+bevy = "0.14.0"
 
-harmony_modloader_api = { path = "../crates/modloader/api" }
+harmony_modloader = { path = "../crates/modloader" }
 harmony_modloader_build = { path = "../crates/modloader/build" }

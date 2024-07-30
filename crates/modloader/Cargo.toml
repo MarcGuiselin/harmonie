@@ -7,4 +7,5 @@ edition = "2021"
 [dependencies]
 harmony_modloader_api = { path = "api" }
 
+bevy_app = "0.14.0"
 bitcode = { version = "0", features = ["derive"] }

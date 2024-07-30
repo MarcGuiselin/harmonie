@@ -1,4 +1,4 @@
-use futures::{join, StreamExt};
+use futures_concurrency::prelude::*;
 use harmony_modloader_api as api;
 use std::io::Result;
 use std::path::PathBuf;
@@ -15,10 +15,10 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
     } else {
         "target/harmony-build/debug"
     });
-    let _ = tokio::fs::remove_dir_all(&temp_dir).await;
-    let _ = tokio::fs::remove_dir_all(&target_dir).await;
-    tokio::fs::create_dir_all(&temp_dir).await?;
-    tokio::fs::create_dir_all(&target_dir).await?;
+    let _ = async_fs::remove_dir_all(&temp_dir).await;
+    let _ = async_fs::remove_dir_all(&target_dir).await;
+    async_fs::create_dir_all(&temp_dir).await?;
+    async_fs::create_dir_all(&target_dir).await?;
 
     // Build a debug release of mods for manifest generation
     build_raw(
@@ -34,7 +34,7 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
         let filename = format!("{}.wasm", package);
         let from = build_dir.join(&filename);
         let to = temp_dir.join(&filename);
-        tokio::fs::rename(from, to).await?;
+        async_fs::rename(from, to).await?;
     }
 
     // 1. Generate the manifest for each mod
@@ -50,7 +50,7 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
     );
 
     // Do 1 and 2 concurrently
-    let (result1, result2) = join![generate_manifests_fut, generate_wasm_fut];
+    let (result1, result2) = (generate_manifests_fut, generate_wasm_fut).join().await;
 
     result1?;
     result2?;
@@ -63,27 +63,26 @@ async fn generate_manifests(
     target_dir: PathBuf,
     packages: Vec<String>,
 ) -> Result<()> {
-    let encoded_manifests = futures::stream::iter(
-        packages
-            .iter()
-            .map(|package| temp_dir.join(format!("{}.wasm", package)))
-            .map(|path| tokio::spawn(wasm_export_encoded_manifest(path))),
-    )
-    .buffer_unordered(4)
-    .map(|r| r?)
-    .collect::<Vec<_>>()
-    .await
-    .into_iter()
-    .collect::<Result<Vec<_>>>()?;
+    let encoded_manifests = packages
+        .clone()
+        .into_co_stream()
+        .map(|package| {
+            let path = temp_dir.join(format!("{}.wasm", package));
+            async move { wasm_export_encoded_manifest(path).await }
+        })
+        .collect::<Vec<Result<Vec<u8>>>>()
+        .await;
+
+    let encoded_manifests = encoded_manifests.into_iter().collect::<Result<Vec<_>>>()?;
 
     for (package, encoded_manifest) in packages.iter().zip(encoded_manifests) {
         let manifest: api::ModManifest<'_> = bitcode::decode(&encoded_manifest).unwrap();
         let as_string = format!("{:#?}", manifest);
         let path = target_dir.join(format!("{}.manifest.txt", package));
-        tokio::fs::write(&path, as_string).await?;
+        async_fs::write(&path, as_string).await?;
 
         let path = target_dir.join(format!("{}.manifest", package));
-        tokio::fs::write(&path, encoded_manifest).await?;
+        async_fs::write(&path, encoded_manifest).await?;
     }
 
     Ok(())
@@ -112,7 +111,7 @@ async fn generate_wasm(
         let filename = format!("{}.wasm", package);
         let from = build_dir.join(&filename);
         let to = target_dir.join(&filename);
-        tokio::fs::rename(from, to).await?;
+        async_fs::rename(from, to).await?;
     }
 
     Ok(())
@@ -145,7 +144,7 @@ async fn build_raw(directory: PathBuf, packages: Vec<String>, build_type: BuildT
         }
     };
 
-    if command.inner.spawn()?.wait().await?.success() {
+    if command.inner.spawn()?.status().await?.success() {
         Ok(())
     } else {
         Err(std::io::Error::new(
@@ -182,7 +181,7 @@ fn submit_manifest(mut context: Context, manifest_ptr: u64) {
 }
 
 async fn wasm_export_encoded_manifest(path: PathBuf) -> Result<Vec<u8>> {
-    let bytes = tokio::fs::read(&path).await?;
+    let bytes = async_fs::read(&path).await?;
 
     // Create a Store.
     let mut store = wasmer::Store::default();

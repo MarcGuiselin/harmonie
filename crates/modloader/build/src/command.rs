@@ -1,5 +1,5 @@
+use async_process::Command;
 use std::{ffi::OsStr, path::Path, str};
-use tokio::process::Command;
 
 pub struct CargoCommand {
     pub inner: Command,

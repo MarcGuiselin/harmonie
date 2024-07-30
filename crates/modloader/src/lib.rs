@@ -1,7 +1,9 @@
-pub struct BevyModding;
+use bevy_app::{App, Plugin};
 
-impl Plugin for BevyModding {
-    fn build(&self, app: &mut App) {
+pub struct ModloaderPlugin;
+
+impl Plugin for ModloaderPlugin {
+    fn build(&self, _: &mut App) {
         // add things to your app here
     }
 }
