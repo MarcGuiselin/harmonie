@@ -1,9 +1,9 @@
-use super::StableId;
+use harmony_modloader_api as api;
 
 /// Similar to bevy's Component
 pub trait Component
 where
-    Self: StableId + bitcode::Encode + Decode,
+    Self: api::HasStableId + bitcode::Encode + Decode,
 {
     fn get_local_component_id() -> u32;
 }

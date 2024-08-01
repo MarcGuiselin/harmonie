@@ -1,13 +1,13 @@
-use super::StableId;
+use crate::HasStableId;
 
 pub trait ScheduleLabel
 where
-    Self: StableId,
+    Self: HasStableId,
 {
 }
 
 pub struct Start;
-impl StableId for Start {
+impl HasStableId for Start {
     const CRATE_NAME: &'static str = "core";
     const VERSION: &'static str = "v0.0.0";
     const NAME: &'static str = "Start";
@@ -15,7 +15,7 @@ impl StableId for Start {
 impl ScheduleLabel for Start {}
 
 pub struct Update;
-impl StableId for Update {
+impl HasStableId for Update {
     const CRATE_NAME: &'static str = "core";
     const VERSION: &'static str = "v0.0.0";
     const NAME: &'static str = "Update";

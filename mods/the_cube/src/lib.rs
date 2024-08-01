@@ -35,7 +35,7 @@ fn init(engine: &mut Harmony) {
 ///       an idea might be for the macro to always make these pub, since we always want to export these for other mods
 pub struct TheCube;
 
-impl StableId for TheCube {
+impl HasStableId for TheCube {
     /// This is how identical features are identified between mods
     const CRATE_NAME: &'static str = "the_cube";
     const VERSION: &'static str = "v0.0.0";
@@ -55,7 +55,7 @@ impl Feature for TheCube {
 #[derive(bitcode::Decode, bitcode::Encode)]
 struct Cube;
 
-impl StableId for Cube {
+impl HasStableId for Cube {
     const CRATE_NAME: &'static str = "the_cube";
     const VERSION: &'static str = "v0.0.0";
     const NAME: &'static str = "Cube";

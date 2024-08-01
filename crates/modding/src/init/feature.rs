@@ -1,10 +1,10 @@
 use crate::ecs::{
     system::{Descriptors, IntoDescriptors},
-    Resource, ScheduleLabel, StableId,
+    Resource,
 };
 use harmony_modloader_api as api;
 
-pub trait Feature: StableId {
+pub trait Feature: api::HasStableId {
     fn build(&self, feature: &mut FeatureBuilder);
 }
 
@@ -36,7 +36,7 @@ impl FeatureBuilder {
         self
     }
 
-    pub fn add_systems<S: ScheduleLabel, M>(
+    pub fn add_systems<S: api::ScheduleLabel, M>(
         &mut self,
         schedule: S,
         systems: impl IntoDescriptors<M>,

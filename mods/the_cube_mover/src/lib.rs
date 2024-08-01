@@ -10,7 +10,7 @@ pub fn init(engine: &mut Harmony) {
 ///       an idea might be to always make these pub, since we always want to export these
 pub struct TheCubeSpinner;
 
-impl StableId for TheCubeSpinner {
+impl HasStableId for TheCubeSpinner {
     /// This is how identical features are identified between mods
     const CRATE_NAME: &'static str = "the_cube";
     const VERSION: &'static str = "v0.0.0";

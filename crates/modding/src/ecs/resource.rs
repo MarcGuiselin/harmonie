@@ -1,7 +1,7 @@
-use super::StableId;
+use harmony_modloader_api as api;
 
 pub trait Resource
 where
-    Self: StableId + bitcode::Encode + Default,
+    Self: api::HasStableId + bitcode::Encode + Default,
 {
 }
