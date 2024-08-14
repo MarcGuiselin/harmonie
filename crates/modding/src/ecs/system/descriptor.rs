@@ -121,7 +121,9 @@ where
         let executor = Box::new(system);
 
         Descriptors {
-            systems: vec![(api::SystemDescriptor { id, params }, executor)],
+            // TODO: Declare External systems + don't generate an executor (or generate from arbitrary fn)
+            // Assume all systems belong to the current mod
+            systems: vec![(api::SystemDescriptor::Internal { id, params }, executor)],
             sets: vec![api::SetDescriptor {
                 indices: api::SetIndices::System(0),
             }],

@@ -11,7 +11,7 @@ mod schedule;
 pub use schedule::*;
 
 /// Identify structs
-#[derive(Encode, Decode, PartialEq, Debug, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Hash)]
 pub struct StableId<'a> {
     pub crate_name: &'a str,
     pub version: &'a str,
@@ -34,7 +34,7 @@ pub trait HasStableId {
 }
 
 /// Identify systems
-#[derive(Encode, Decode, PartialEq, Debug, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Hash, Copy, Clone)]
 pub struct SystemId(u64);
 
 impl SystemId {
@@ -50,18 +50,30 @@ impl SystemId {
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
-pub enum ExecutionDescriptor {
-    System(SystemDescriptor),
-    Set {
-        systems: Vec<SystemId>,
-        conditions: Vec<SystemId>,
+pub enum SystemDescriptor {
+    External {
+        id: SystemId,
+    },
+    Internal {
+        id: SystemId,
+        params: Vec<ParamDescriptor>,
     },
 }
 
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub struct SystemDescriptor {
-    pub id: SystemId,
-    pub params: Vec<ParamDescriptor>,
+impl SystemDescriptor {
+    pub fn id(&self) -> SystemId {
+        match self {
+            Self::External { id } => *id,
+            Self::Internal { id, .. } => *id,
+        }
+    }
+
+    pub fn into_params(self) -> Vec<ParamDescriptor> {
+        match self {
+            Self::External { .. } => Vec::new(),
+            Self::Internal { params, .. } => params,
+        }
+    }
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
@@ -76,7 +88,7 @@ pub struct SetDescriptor {
     // TODO: run conditions, order, etc
 }
 
-#[derive(Encode, Decode, PartialEq, Debug, Clone)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone)]
 pub enum ParamDescriptor {
     Command,
     // TODO: Query, Res, ResMut, etc

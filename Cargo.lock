@@ -2684,8 +2684,14 @@ name = "harmony_modloader"
 version = "0.0.0"
 dependencies = [
  "bevy_app",
+ "bevy_ecs",
+ "bevy_ecs_macros",
+ "bevy_tasks",
+ "bevy_utils",
  "bitcode",
  "harmony_modloader_api",
+ "hashbrown 0.14.5",
+ "thiserror",
 ]
 
 [[package]]

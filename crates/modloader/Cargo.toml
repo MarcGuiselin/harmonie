@@ -8,4 +8,10 @@ edition = "2021"
 harmony_modloader_api = { path = "api" }
 
 bevy_app = "0.14.0"
+bevy_ecs = "0.14.0"
+bevy_ecs_macros = "0.14.0"
+bevy_tasks = "0.14.0"
+bevy_utils = "0.14.0"
 bitcode = { version = "0", features = ["derive"] }
+hashbrown = "0.14"
+thiserror = "1.0"
