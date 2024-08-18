@@ -7,6 +7,8 @@ use std::process::Stdio;
 mod command;
 use command::CargoCommand;
 
+mod fs_utils;
+
 pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> Result<()> {
     // Clear/prep harmony-build directory
     let temp_dir = directory.join("target/harmony-build/temp");
@@ -15,8 +17,8 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
     } else {
         "target/harmony-build/debug"
     });
-    let _ = async_fs::remove_dir_all(&temp_dir).await;
-    let _ = async_fs::remove_dir_all(&target_dir).await;
+    let _ = fs_utils::remove_dir_contents(&temp_dir).await;
+    let _ = fs_utils::remove_dir_contents(&target_dir).await;
     async_fs::create_dir_all(&temp_dir).await?;
     async_fs::create_dir_all(&target_dir).await?;
 

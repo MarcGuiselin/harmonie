@@ -11,4 +11,5 @@ async-fs = "2.1.2"
 async-process = "2.2.3"
 bitcode = { version = "0", features = ["derive"] }
 futures-concurrency = "7.6.1"
+futures-lite = "2.3.0"
 wasmer = "4.3.3"
