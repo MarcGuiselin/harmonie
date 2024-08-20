@@ -1,8 +1,14 @@
+use async_process::Stdio;
+use async_std::{
+    io::{prelude::BufReadExt, BufReader, Read},
+    stream::StreamExt,
+    task::spawn,
+};
+use bevy_utils::tracing::{error, info};
 use futures_concurrency::prelude::*;
 use harmony_modloader_api as api;
 use std::io::Result;
 use std::path::PathBuf;
-use std::process::Stdio;
 
 mod command;
 use command::CargoCommand;
@@ -133,8 +139,7 @@ async fn build_raw(directory: PathBuf, packages: Vec<String>, build_type: BuildT
         .current_dir(directory)
         .args(&["--target", "wasm32-unknown-unknown"])
         .env("RUSTFLAGS", "-C link-arg=--import-memory")
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit());
+        .stderr(Stdio::piped());
 
     match build_type {
         BuildType::Debug => {}
@@ -146,13 +151,36 @@ async fn build_raw(directory: PathBuf, packages: Vec<String>, build_type: BuildT
         }
     };
 
-    if command.inner.spawn()?.status().await?.success() {
+    let mut child = command.inner.spawn()?;
+
+    // All human readable output for cargo is sent to stderr
+    let stderr = child.stderr.take().unwrap();
+    let stderr_handle = spawn(output_cargo_stderr(stderr));
+
+    let (status, _) = (child.status(), stderr_handle).join().await;
+    if status?.success() {
         Ok(())
     } else {
         Err(std::io::Error::new(
             std::io::ErrorKind::Other,
             "Failed to build mods",
         ))
+    }
+}
+
+async fn output_cargo_stderr(output: impl Read + Unpin) {
+    let reader = BufReader::new(output);
+    let mut lines = reader.lines();
+
+    let mut err = false;
+    while let Some(line) = lines.next().await {
+        let line = line.expect("Failed to read line");
+        err |= line.contains("error");
+        if err {
+            error!("{}", line);
+        } else {
+            info!("{}", line);
+        }
     }
 }
 

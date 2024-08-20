@@ -1,4 +1,4 @@
-use bevy::{app::ScheduleRunnerPlugin, prelude::*, tasks::AsyncComputeTaskPool};
+use bevy::{app::ScheduleRunnerPlugin, log::LogPlugin, prelude::*, tasks::AsyncComputeTaskPool};
 use std::{io::Result, time::Duration};
 
 fn main() {
@@ -6,6 +6,7 @@ fn main() {
         .add_plugins((
             MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs(1))),
             harmony_modloader::ModloaderPlugin,
+            LogPlugin::default(),
         ))
         .add_systems(Startup, build_mods)
         .run();
@@ -23,8 +24,10 @@ fn build_mods() {
 
     AsyncComputeTaskPool::get()
         .spawn(async {
-            build().await.expect("Failed to build mods");
-            println!("Mods built successfully!");
+            match build().await {
+                Ok(_) => info!("Mods built successfully"),
+                Err(e) => error!("Failed to build mods: {:?}", e),
+            }
         })
         .detach();
 }
