@@ -98,5 +98,32 @@ pub struct FeatureDescriptor<'a> {
 
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct ModManifest<'a> {
+    pub wasm_hash: FileHash,
     pub features: Vec<FeatureDescriptor<'a>>,
+}
+
+#[derive(Encode, Decode, PartialEq)]
+pub struct FileHash([u8; 16]);
+
+impl std::fmt::Debug for FileHash {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "FileHash(\"")?;
+        for byte in self.0.iter() {
+            write!(f, "{:02x}", byte)?;
+        }
+        write!(f, "\")")?;
+        Ok(())
+    }
+}
+
+impl FileHash {
+    pub fn empty() -> Self {
+        Self([0; 16])
+    }
+
+    pub fn from_sha256(bytes: [u8; 32]) -> Self {
+        let mut hash = [0; 16];
+        hash.copy_from_slice(&bytes[..16]);
+        Self(hash)
+    }
 }

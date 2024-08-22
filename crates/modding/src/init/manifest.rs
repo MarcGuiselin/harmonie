@@ -33,6 +33,7 @@ pub fn __internal_generate_manifest(harmony: Harmony) {
     }
 
     let manifest = api::ModManifest {
+        wasm_hash: api::FileHash::empty(),
         features: harmony.features.into_iter().map(new_feature).collect(),
     };
     let encoded = bitcode::encode(&manifest);

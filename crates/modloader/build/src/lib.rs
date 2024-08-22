@@ -7,6 +7,7 @@ use async_std::{
 use bevy_utils::tracing::{error, info};
 use futures_concurrency::prelude::*;
 use harmony_modloader_api as api;
+use sha2::{Digest, Sha256};
 use std::io::Result;
 use std::path::PathBuf;
 
@@ -40,68 +41,58 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
     let build_dir = directory.join("target/wasm32-unknown-unknown/debug");
     for package in packages.iter() {
         let filename = format!("{}.wasm", package);
-        let from = build_dir.join(&filename);
-        let to = temp_dir.join(&filename);
-        async_fs::rename(from, to).await?;
+        let src = build_dir.join(&filename);
+        let dst = temp_dir.join(&filename);
+        async_fs::rename(src, dst).await?;
     }
 
     // 1. Generate the manifest for each mod
-    let generate_manifests_fut =
-        generate_manifests(temp_dir.clone(), target_dir.clone(), packages.clone());
+    let generate_manifests_fut = generate_manifests(temp_dir.clone(), packages.clone());
 
     // 2. Generate the wasm files for each mod
-    let generate_wasm_fut = generate_wasm(
-        release,
-        directory.clone(),
-        target_dir.clone(),
-        packages.clone(),
-    );
+    let generate_wasm_fut = generate_wasm(release, directory.clone(), packages.clone());
 
     // Do 1 and 2 concurrently
     let (result1, result2) = (generate_manifests_fut, generate_wasm_fut).join().await;
-
-    result1?;
+    let encoded_manifests = result1?;
     result2?;
+
+    // Do final processing of manifest and write files to target directory
+    packages
+        .into_iter()
+        .zip(encoded_manifests)
+        .collect::<Vec<_>>()
+        .into_co_stream()
+        .map(|(package, encoded_manifest)| {
+            let build_dir = directory.join(if release {
+                "target/wasm32-unknown-unknown/release"
+            } else {
+                "target/wasm32-unknown-unknown/debug"
+            });
+            final_processing(package, encoded_manifest, build_dir, target_dir.clone())
+        })
+        .collect::<Vec<Result<()>>>()
+        .await
+        .into_iter()
+        .collect::<Result<Vec<()>>>()?;
 
     Ok(())
 }
 
-async fn generate_manifests(
-    temp_dir: PathBuf,
-    target_dir: PathBuf,
-    packages: Vec<String>,
-) -> Result<()> {
-    let encoded_manifests = packages
-        .clone()
+async fn generate_manifests(temp_dir: PathBuf, packages: Vec<String>) -> Result<Vec<Vec<u8>>> {
+    packages
         .into_co_stream()
         .map(|package| {
             let path = temp_dir.join(format!("{}.wasm", package));
-            async move { wasm_export_encoded_manifest(path).await }
+            wasm_export_encoded_manifest(path)
         })
         .collect::<Vec<Result<Vec<u8>>>>()
-        .await;
-
-    let encoded_manifests = encoded_manifests.into_iter().collect::<Result<Vec<_>>>()?;
-
-    for (package, encoded_manifest) in packages.iter().zip(encoded_manifests) {
-        let manifest: api::ModManifest<'_> = bitcode::decode(&encoded_manifest).unwrap();
-        let as_string = format!("{:#?}", manifest);
-        let path = target_dir.join(format!("{}.manifest.txt", package));
-        async_fs::write(&path, as_string).await?;
-
-        let path = target_dir.join(format!("{}.manifest", package));
-        async_fs::write(&path, encoded_manifest).await?;
-    }
-
-    Ok(())
+        .await
+        .into_iter()
+        .collect()
 }
 
-async fn generate_wasm(
-    release: bool,
-    directory: PathBuf,
-    target_dir: PathBuf,
-    packages: Vec<String>,
-) -> Result<()> {
+async fn generate_wasm(release: bool, directory: PathBuf, packages: Vec<String>) -> Result<()> {
     let build_type = if release {
         BuildType::Release
     } else {
@@ -109,18 +100,37 @@ async fn generate_wasm(
     };
     build_raw(directory.clone(), packages.clone(), build_type).await?;
 
-    // Write manifest files to release directory
-    let build_dir = directory.join(if release {
-        "target/wasm32-unknown-unknown/release"
-    } else {
-        "target/wasm32-unknown-unknown/debug"
-    });
-    for package in packages.iter() {
-        let filename = format!("{}.wasm", package);
-        let from = build_dir.join(&filename);
-        let to = target_dir.join(&filename);
-        async_fs::rename(from, to).await?;
-    }
+    Ok(())
+}
+
+async fn final_processing(
+    package: String,
+    encoded_manifest: Vec<u8>,
+    build_dir: PathBuf,
+    target_dir: PathBuf,
+) -> Result<()> {
+    let wasm_path = build_dir.join(format!("{}.wasm", package));
+    let wasm_bytes = async_fs::read(&wasm_path).await?;
+    let wasm_hash = api::FileHash::from_sha256(Sha256::digest(&wasm_bytes).into());
+
+    let old_manifest: api::ModManifest<'_> = bitcode::decode(&encoded_manifest).unwrap();
+    let manifest = api::ModManifest {
+        wasm_hash,
+        features: old_manifest.features,
+    };
+
+    let as_string = format!("{:#?}", manifest);
+    let path = target_dir.join(format!("{}.manifest.txt", package));
+    async_fs::write(&path, as_string).await?;
+
+    let encoded_manifest = bitcode::encode(&manifest);
+    let path = target_dir.join(format!("{}.manifest", package));
+    async_fs::write(&path, encoded_manifest).await?;
+
+    // Move wasm file to target directory
+    let src = wasm_path;
+    let dst = target_dir.join(format!("{}.wasm", package));
+    async_fs::rename(src, dst).await?;
 
     Ok(())
 }
