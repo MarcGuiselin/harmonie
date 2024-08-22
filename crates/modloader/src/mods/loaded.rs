@@ -2,19 +2,19 @@ use std::path::Path;
 
 use bevy_utils::tracing::warn;
 
-pub struct LoadingMod {
+pub struct LoadedMod {
     // TODO
 }
 
-impl LoadingMod {
-    pub async fn try_from_path<P>(path: P) -> LoadingModResult
+impl LoadedMod {
+    pub async fn try_from_path<P>(path: P) -> LoadedModResult
     where
         P: AsRef<Path>,
     {
         let path = path.as_ref().to_owned();
         let bytes = async_fs::read(&path)
             .await
-            .map_err(|_| LoadingModError::FileNotFound)?;
+            .map_err(|_| LoadingError::FileNotFound)?;
 
         warn!("Load mod: {:?}\n   Bytes: {}", path, bytes.len());
 
@@ -22,8 +22,8 @@ impl LoadingMod {
     }
 }
 
-pub type LoadingModResult = Result<LoadingMod, LoadingModError>;
+pub type LoadedModResult = Result<LoadedMod, LoadingError>;
 
-pub enum LoadingModError {
+pub enum LoadingError {
     FileNotFound,
 }
