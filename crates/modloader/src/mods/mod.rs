@@ -1,17 +1,24 @@
 use std::{future::Future, path::Path};
 
-use bevy_app::{App, Plugin};
+use bevy_app::{App, Plugin, Update};
+use bevy_ecs::system::ResMut;
 use bevy_ecs_macros::Resource;
-use bevy_tasks::{AsyncComputeTaskPool, Task};
+use bevy_tasks::{block_on, poll_once, AsyncComputeTaskPool, Task};
+
+mod feature;
+use bevy_utils::tracing::info;
+pub use feature::*;
 
 mod loaded;
+pub use loaded::LoadingError;
 use loaded::{LoadedMod, LoadedModResult};
 
 pub(crate) struct ModPlugin;
 
 impl Plugin for ModPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<Mods>();
+        app.init_resource::<Mods>()
+            .add_systems(Update, handle_loading_mods);
     }
 }
 
@@ -35,4 +42,15 @@ impl Mods {
         let task = thread_pool.spawn(future);
         self.loading.push(task);
     }
+}
+
+fn handle_loading_mods(mut mods: ResMut<Mods>) {
+    mods.loading.retain_mut(|task| {
+        if let Some(result) = block_on(poll_once(task)) {
+            info!("Mod loaded with result: {:#?}", result);
+            false
+        } else {
+            true
+        }
+    });
 }

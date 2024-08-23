@@ -11,11 +11,29 @@ mod schedule;
 pub use schedule::*;
 
 /// Identify structs
-#[derive(Encode, Decode, PartialEq, Debug, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Hash)]
 pub struct StableId<'a> {
     pub crate_name: &'a str,
     pub version: &'a str,
     pub name: &'a str,
+}
+
+impl<'a> StableId<'a> {
+    // Not ideal, but simply taking [this advice](https://stackoverflow.com/questions/72105604/implement-toowned-for-user-defined-types#answer-72106272:~:text=If%20you%20just%20want%20to%20be%20able%20to%20call%20a%20.to_owned()%20method%20on%20a%20DataRef%2C%20don%27t%20bother%20with%20the%20ToOwned%20trait%3B%20just%20write%20an%20inherent%20(non%2Dtrait)%20method.)
+    pub fn to_owned(&self) -> OwnedStableId {
+        OwnedStableId {
+            crate_name: self.crate_name.to_owned(),
+            version: self.version.to_owned(),
+            name: self.name.to_owned(),
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, Debug, Hash)]
+pub struct OwnedStableId {
+    pub crate_name: String,
+    pub version: String,
+    pub name: String,
 }
 
 /// A id shared between mods, used to identify objects defined in the manifest
@@ -31,10 +49,14 @@ pub trait HasStableId {
             name: Self::NAME,
         }
     }
+
+    fn get_owned_stable_id(&self) -> OwnedStableId {
+        self.get_stable_id().to_owned()
+    }
 }
 
 /// Identify systems
-#[derive(Encode, Decode, PartialEq, Debug, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Hash, Clone, Copy)]
 pub struct SystemId(u64);
 
 impl SystemId {
@@ -47,15 +69,6 @@ impl SystemId {
 
         Self(result)
     }
-}
-
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub enum ExecutionDescriptor {
-    System(SystemDescriptor),
-    Set {
-        systems: Vec<SystemId>,
-        conditions: Vec<SystemId>,
-    },
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
@@ -76,7 +89,7 @@ pub struct SetDescriptor {
     // TODO: run conditions, order, etc
 }
 
-#[derive(Encode, Decode, PartialEq, Debug, Clone)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone)]
 pub enum ParamDescriptor {
     Command,
     // TODO: Query, Res, ResMut, etc

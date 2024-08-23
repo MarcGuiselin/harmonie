@@ -2805,6 +2805,8 @@ dependencies = [
  "futures-lite 2.3.0",
  "harmony_modloader_api",
  "notify",
+ "sha2",
+ "wasmer",
 ]
 
 [[package]]
