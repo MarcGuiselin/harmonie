@@ -1,10 +1,26 @@
-use std::hash::{Hash, Hasher};
+use std::{
+    fmt,
+    hash::{Hash, Hasher},
+};
 
 use bevy_utils::HashSet;
 use harmony_modloader_api as api;
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq)]
 pub(crate) struct SystemSet(HashSet<api::SystemId>);
+
+impl fmt::Debug for SystemSet {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "SystemSet[")?;
+        for (i, id) in self.0.iter().enumerate() {
+            if i != 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "\"{:x}\"", id.get_raw())?;
+        }
+        write!(f, "]")
+    }
+}
 
 impl SystemSet {
     pub fn new(

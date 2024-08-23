@@ -1,6 +1,7 @@
 use bitcode::{Decode, Encode};
 use std::{
     any::TypeId,
+    fmt,
     hash::{DefaultHasher, Hash, Hasher},
 };
 
@@ -11,7 +12,7 @@ mod schedule;
 pub use schedule::*;
 
 /// Identify structs
-#[derive(Encode, Decode, PartialEq, Eq, Debug, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Hash)]
 pub struct StableId<'a> {
     pub crate_name: &'a str,
     pub version: &'a str,
@@ -29,11 +30,31 @@ impl<'a> StableId<'a> {
     }
 }
 
-#[derive(PartialEq, Eq, Debug, Hash)]
+impl<'a> fmt::Debug for StableId<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "StableId(\"{}::{} {}\")",
+            self.crate_name, self.name, self.version
+        )
+    }
+}
+
+#[derive(PartialEq, Eq, Hash)]
 pub struct OwnedStableId {
     pub crate_name: String,
     pub version: String,
     pub name: String,
+}
+
+impl fmt::Debug for OwnedStableId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "OwnedStableId(\"{}::{} {}\")",
+            self.crate_name, self.name, self.version
+        )
+    }
 }
 
 /// A id shared between mods, used to identify objects defined in the manifest
@@ -56,7 +77,7 @@ pub trait HasStableId {
 }
 
 /// Identify systems
-#[derive(Encode, Decode, PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct SystemId(u64);
 
 impl SystemId {
@@ -68,6 +89,16 @@ impl SystemId {
         let result = hasher.finish();
 
         Self(result)
+    }
+
+    pub fn get_raw(&self) -> u64 {
+        self.0
+    }
+}
+
+impl fmt::Debug for SystemId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "SystemId(\"{:x}\")", self.0)
     }
 }
 
