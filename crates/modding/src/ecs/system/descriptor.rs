@@ -32,49 +32,23 @@ impl Descriptors {
         }
     }
 
-    pub fn push(&mut self, descriptors: Self) {
-        let Self {
-            mut systems,
-            mut sets,
-        } = descriptors;
-
-        for set in sets.iter_mut() {
-            match &mut set.indices {
-                api::SetIndices::System(index) => {
-                    *index += self.systems.len();
-                }
-                api::SetIndices::Sets(indexes) => {
-                    for index in indexes.iter_mut() {
-                        *index += self.sets.len();
-                    }
-                }
-            };
-        }
-
-        self.systems.append(&mut systems);
-        self.sets.append(&mut sets);
+    pub fn push(&mut self, mut descriptors: Self) {
+        self.systems.append(&mut descriptors.systems);
+        self.sets.append(&mut descriptors.sets);
     }
 
-    pub fn append_set(&mut self, descriptors: Vec<Self>) {
-        let mut offset = 0;
-        let sets = descriptors
-            .iter()
-            .filter_map(|descriptors| {
-                if descriptors.sets.is_empty() {
-                    None
-                } else {
-                    offset += descriptors.sets.len();
-                    Some(offset - 1)
-                }
-            })
-            .collect();
+    pub fn append_set(&mut self, set_descriptors: Vec<Self>) {
+        let mut systems = Vec::new();
+        for descriptors in set_descriptors {
+            // The last set descriptor must describe that set (and not it's dependencies)
+            descriptors
+                .sets
+                .last()
+                .map(|set| systems.extend(set.systems.iter()));
 
-        descriptors.into_iter().for_each(|descriptors| {
             self.push(descriptors);
-        });
-        self.sets.push(api::SetDescriptor {
-            indices: api::SetIndices::Sets(sets),
-        });
+        }
+        self.sets.push(api::SetDescriptor { systems });
     }
 }
 
@@ -100,8 +74,6 @@ macro_rules! impl_system_collection {
                 let ($($sys,)*) = self;
                 descriptors.append_set(vec![$($sys.into_descriptors()),*]);
 
-                // This is where I planned to add to sets
-
                 descriptors
             }
         }
@@ -122,9 +94,7 @@ where
 
         Descriptors {
             systems: vec![(api::SystemDescriptor { id, params }, executor)],
-            sets: vec![api::SetDescriptor {
-                indices: api::SetIndices::System(0),
-            }],
+            sets: vec![api::SetDescriptor { systems: vec![id] }],
         }
     }
 }

@@ -56,13 +56,8 @@ impl LoadedSchedule {
         feature_id: usize,
         descriptor: &api::ScheduleDescriptor<'a>,
     ) -> Result<(), LoadingError> {
-        // Generate and insert SystemSets
-        let mut relative_sets: Vec<SystemSet> = Vec::with_capacity(descriptor.sets.len());
-        for api::SetDescriptor { indices } in &descriptor.sets {
-            relative_sets.push(SystemSet::new(indices, &descriptor.systems, &relative_sets));
-        }
-        for set in relative_sets {
-            self.sets.insert(set);
+        for api::SetDescriptor { systems } in &descriptor.sets {
+            self.sets.insert(SystemSet::new(systems));
         }
 
         for api::SystemDescriptor { id, params } in &descriptor.systems {

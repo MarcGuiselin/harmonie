@@ -77,7 +77,7 @@ pub trait HasStableId {
 }
 
 /// Identify systems
-#[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub struct SystemId(u64);
 
 impl SystemId {
@@ -109,14 +109,8 @@ pub struct SystemDescriptor {
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
-pub enum SetIndices {
-    System(usize),
-    Sets(Vec<usize>),
-}
-
-#[derive(Encode, Decode, PartialEq, Debug)]
 pub struct SetDescriptor {
-    pub indices: SetIndices,
+    pub systems: Vec<SystemId>,
     // TODO: run conditions, order, etc
 }
 

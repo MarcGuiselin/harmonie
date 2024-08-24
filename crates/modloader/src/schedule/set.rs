@@ -23,28 +23,12 @@ impl fmt::Debug for SystemSet {
 }
 
 impl SystemSet {
-    pub fn new(
-        indices: &api::SetIndices,
-        systems: &Vec<api::SystemDescriptor>,
-        preceeding_sets: &Vec<SystemSet>,
-    ) -> Self {
-        Self(match indices {
-            api::SetIndices::System(index) => {
-                let mut id = HashSet::with_capacity(1);
-                id.insert(systems[*index].id);
-                id
-            }
-            api::SetIndices::Sets(indices) => {
-                let mut id = HashSet::with_capacity(indices.len());
-                for set_index in indices {
-                    // SetDescriptors for sets only ever include the sets defined before them
-                    for system_index in preceeding_sets[*set_index].0.iter() {
-                        id.insert(*system_index);
-                    }
-                }
-                id
-            }
-        })
+    pub fn new(systems: &Vec<api::SystemId>) -> Self {
+        let mut id = HashSet::new();
+        for system in systems {
+            id.insert(*system);
+        }
+        Self(id)
     }
 }
 
