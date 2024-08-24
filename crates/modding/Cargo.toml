@@ -7,7 +7,7 @@ edition = "2021"
 harmony_modloader_api = { path = "../modloader/api" }
 
 bitcode = { version = "0", features = ["derive"] }
-bevy_utils_proc_macros = "0.14.0"
+bevy_utils_proc_macros = "0.14"
 
 [features]
 generate_manifest = []
