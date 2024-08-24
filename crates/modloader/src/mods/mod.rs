@@ -6,7 +6,7 @@ use bevy_ecs_macros::Resource;
 use bevy_tasks::{block_on, poll_once, AsyncComputeTaskPool, Task};
 
 mod feature;
-use bevy_utils::tracing::info;
+use bevy_utils::tracing::{error, info, warn};
 pub use feature::*;
 
 mod loaded;
@@ -25,7 +25,7 @@ impl Plugin for ModPlugin {
 #[derive(Resource, Default)]
 pub struct Mods {
     loading: Vec<Task<LoadedModResult>>,
-    // TODO
+    loaded: Vec<Option<LoadedMod>>,
 }
 
 impl Mods {
@@ -45,12 +45,34 @@ impl Mods {
 }
 
 fn handle_loading_mods(mut mods: ResMut<Mods>) {
+    // Remove loaded tasks from loading
+    let mut loaded = Vec::new();
     mods.loading.retain_mut(|task| {
         if let Some(result) = block_on(poll_once(task)) {
-            info!("Mod loaded with result: {:#?}", result);
+            loaded.push(result);
             false
         } else {
             true
         }
     });
+
+    for loaded in loaded {
+        match loaded {
+            Ok(loaded) => {
+                let opt = Some(loaded);
+                if mods.loaded.contains(&opt) {
+                    warn!(
+                        "Mod already loaded: {:#?}. Skipping.",
+                        opt.as_ref().unwrap().manifest_hash
+                    );
+                } else {
+                    info!("Mod loaded: {:#?}", opt.as_ref().unwrap());
+                    mods.loaded.push(opt);
+                }
+            }
+            Err(err) => {
+                error!("Failed to load mod: {:?}", err);
+            }
+        }
+    }
 }

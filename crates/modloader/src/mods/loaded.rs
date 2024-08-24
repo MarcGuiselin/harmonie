@@ -14,10 +14,16 @@ use crate::schedule::LoadedSchedules;
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct LoadedMod {
-    manifest_hash: api::FileHash,
+    pub(super) manifest_hash: api::FileHash,
     module: wasmer::Module,
     features: Vec<Feature>,
     schedules: LoadedSchedules,
+}
+
+impl PartialEq for LoadedMod {
+    fn eq(&self, other: &Self) -> bool {
+        self.manifest_hash == other.manifest_hash
+    }
 }
 
 impl LoadedMod {

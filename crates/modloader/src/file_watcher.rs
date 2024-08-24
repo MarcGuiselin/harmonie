@@ -94,10 +94,11 @@ fn update_mods(mut mods: ResMut<Mods>, file_watcher: Res<FileWatcher>) {
                     match path.extension() {
                         Some(ext) if ext == "wasm" => match kind {
                             EventKind::Create(_) => mods.load_from_path(path),
-                            EventKind::Remove(_) => {
-                                warn!("unloading mods not supported yet")
-                            }
-                            _ => warn!("Unknown file watcher event: {:?} {:?}", path, kind),
+                            _ => warn!(
+                                "Ignored event: {:?} {:?}",
+                                path.file_name().unwrap_or_default(),
+                                kind
+                            ),
                         },
                         _ => {}
                     }
