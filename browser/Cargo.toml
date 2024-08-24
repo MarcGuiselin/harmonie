@@ -6,7 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = "0.14.0"
+bevy = { version = "0.14.0", default-features = false, features = [
+    "multi_threaded",
+] }
 
 harmony_modloader = { path = "../crates/modloader" }
 harmony_modloader_build = { path = "../crates/modloader/build" }

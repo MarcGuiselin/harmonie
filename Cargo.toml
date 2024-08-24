@@ -8,3 +8,11 @@ members = [
     "crates/modloader/build",
     "mods/*",
 ]
+
+# Enable small optimizations for local code
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies
+[profile.dev.package."*"]
+opt-level = 3
