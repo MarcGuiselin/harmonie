@@ -3,6 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use bevy_utils::tracing::info;
 use harmony_modloader_api as api;
 use sha2::{Digest, Sha256};
 
@@ -28,6 +29,7 @@ impl LoadedMod {
         P: AsRef<Path>,
     {
         let path = path.as_ref();
+        info!("Loading mod from path: {:?}", path);
 
         // Either files are like this: "modname/.wasm" or "modname.wasm"
         let file_name = path

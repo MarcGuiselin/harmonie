@@ -8,8 +8,8 @@ use bevy_utils::tracing::{error, info};
 use futures_concurrency::prelude::*;
 use harmony_modloader_api as api;
 use sha2::{Digest, Sha256};
-use std::io::Result;
 use std::path::PathBuf;
+use std::{io::Result, time::Instant};
 
 mod command;
 use command::CargoCommand;
@@ -17,6 +17,9 @@ use command::CargoCommand;
 mod fs_utils;
 
 pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> Result<()> {
+    let start = Instant::now();
+    info!("Building mods {:?}", packages);
+
     // Clear/prep harmony-build directory
     let temp_dir = directory.join("target/harmony-build/temp");
     let target_dir: PathBuf = directory.join(if release {
@@ -59,6 +62,7 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
 
     // Do final processing of manifest and write files to target directory
     packages
+        .clone()
         .into_iter()
         .zip(encoded_manifests)
         .collect::<Vec<_>>()
@@ -75,6 +79,9 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
         .await
         .into_iter()
         .collect::<Result<Vec<()>>>()?;
+
+    let duration = start.elapsed();
+    info!("Successfully built mods {:?} in {:?}", packages, duration);
 
     Ok(())
 }

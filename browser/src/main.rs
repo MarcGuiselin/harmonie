@@ -24,9 +24,8 @@ fn build_mods() {
 
     AsyncComputeTaskPool::get()
         .spawn(async {
-            match build().await {
-                Ok(_) => info!("Mods built successfully"),
-                Err(e) => error!("Failed to build mods: {:?}", e),
+            if let Err(e) = build().await {
+                error!("Failed to build mods: {:?}", e);
             }
         })
         .detach();
