@@ -8,8 +8,7 @@ type Dag = DiGraphMap<Node, ()>;
 
 #[derive(Debug, Default)]
 pub struct ScheduleGraph {
-    /// Directed acyclic graph of the dependency (which systems/sets have to run before which other systems/sets)
-    dependency: Dag,
+    // TODO
 }
 
 impl ScheduleGraph {
@@ -96,7 +95,7 @@ impl Builder {
                     Ok(self.populate_set_nodes_inner(set))
                 }
             },
-            api::SystemSet::Named(name) => {
+            schedule::SystemSet::Named(name) => {
                 let set = SystemSet::Named(name.to_owned());
                 Ok(self.populate_set_nodes_inner(set))
             }
