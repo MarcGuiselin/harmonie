@@ -1,7 +1,7 @@
 use std::hash::{Hash, Hasher};
 
 use bevy_utils::{HashMap, HashSet};
-use harmony_modloader_api::api;
+use harmony_modloader_api as api;
 use petgraph::prelude::*;
 
 type Dag = DiGraphMap<Node, ()>;
@@ -95,7 +95,7 @@ impl Builder {
                     Ok(self.populate_set_nodes_inner(set))
                 }
             },
-            schedule::SystemSet::Named(name) => {
+            api::SystemSet::Named(name) => {
                 let set = SystemSet::Named(name.to_owned());
                 Ok(self.populate_set_nodes_inner(set))
             }
