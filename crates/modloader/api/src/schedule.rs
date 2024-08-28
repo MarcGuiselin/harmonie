@@ -2,15 +2,9 @@ use super::*;
 
 /// Describes how to create a schedule
 #[derive(Encode, Decode, PartialEq, Debug)]
-pub struct ScheduleGraph<'a> {
+pub struct Schedule<'a> {
     pub systems: Vec<System>,
     pub constraints: Vec<Constraint<'a>>,
-}
-
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub struct System {
-    pub id: SystemId,
-    pub params: Vec<ParamDescriptor>,
 }
 
 /// Constraints that define the order of systems in the schedule
@@ -18,6 +12,8 @@ pub struct System {
 /// These must always be checked for validity before being loaded by the modloader
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub enum Constraint<'a> {
+    /// This system must run
+    Run(System),
     /// System set A needs to run before system set B
     Before { a: SystemSet<'a>, b: SystemSet<'a> },
     /// System set needs to run only if the condition is met
@@ -30,6 +26,12 @@ pub enum Constraint<'a> {
         parent_name: StableId<'a>,
         set: SystemSet<'a>,
     },
+}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub struct System {
+    pub id: SystemId,
+    pub params: Vec<ParamDescriptor>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

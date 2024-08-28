@@ -5,7 +5,8 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
-pub mod graph;
+mod schedule;
+pub use schedule::*;
 
 mod identifiers;
 pub use identifiers::*;
@@ -128,7 +129,7 @@ pub enum ParamDescriptor {
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct ScheduleDescriptor<'a> {
     pub id: StableId<'a>,
-    pub schedule: graph::Graph<'a>,
+    pub schedule: schedule::Schedule<'a>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

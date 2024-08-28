@@ -1,7 +1,7 @@
 use std::hash::{Hash, Hasher};
 
 use bevy_utils::{HashMap, HashSet};
-use harmony_modloader_api::{self as api, graph};
+use harmony_modloader_api::api;
 use petgraph::prelude::*;
 
 type Dag = DiGraphMap<Node, ()>;
@@ -13,7 +13,7 @@ pub struct ScheduleGraph {
 }
 
 impl ScheduleGraph {
-    pub fn try_from_graph(graph: &graph::ScheduleGraph) -> Result<Self, SchedulingError> {
+    pub fn try_from_graph(graph: &api::Schedule) -> Result<Self, SchedulingError> {
         let mut builder = Builder::new(&graph);
 
         // Add constraints to the dependency graph
@@ -32,7 +32,7 @@ struct Builder {
 }
 
 impl Builder {
-    fn new(graph: &graph::ScheduleGraph) -> Self {
+    fn new(graph: &api::Schedule) -> Self {
         let mut builder = Self::default();
 
         // Populate the dependency graph nodes
@@ -43,23 +43,23 @@ impl Builder {
         builder
     }
 
-    fn add_constraint(&mut self, constraint: &graph::Constraint) -> Result<(), SchedulingError> {
+    fn add_constraint(&mut self, constraint: &api::Constraint) -> Result<(), SchedulingError> {
         match constraint {
-            graph::Constraint::Before { a, b } => {
+            api::Constraint::Before { a, b } => {
                 let (_, end_a) = self.populate_set_nodes(a)?;
                 let (start_b, _) = self.populate_set_nodes(b)?;
 
                 // The last node of a must run before the first node of b
                 self.dependency.add_edge(end_a, start_b, ());
             }
-            graph::Constraint::Condition { set, condition } => {
+            api::Constraint::Condition { set, condition } => {
                 let condition = Node::System(*condition);
                 let (start_set, _) = self.populate_set_nodes(set)?;
 
                 // The condition must run before the first node of the set
                 self.dependency.add_edge(condition, start_set, ());
             }
-            graph::Constraint::Includes { parent_name, set } => {
+            api::Constraint::Includes { parent_name, set } => {
                 let parent = SystemSet::Named(parent_name.to_owned());
                 let (start_parent, end_parent) = self.populate_set_nodes_inner(parent);
                 let (start_set, end_set) = self.populate_set_nodes(set)?;
@@ -77,10 +77,10 @@ impl Builder {
     /// For a given set, resolves the start and end nodes
     fn populate_set_nodes(
         &mut self,
-        set: &graph::SystemSet,
+        set: &api::SystemSet,
     ) -> Result<(Node, Node), SchedulingError> {
         match set {
-            graph::SystemSet::Anonymous(systems) => match systems.len() {
+            api::SystemSet::Anonymous(systems) => match systems.len() {
                 0 => Err(SchedulingError::EmptyAnonymousSet),
                 1 => {
                     let id = Node::System(systems[0]);
@@ -96,7 +96,7 @@ impl Builder {
                     Ok(self.populate_set_nodes_inner(set))
                 }
             },
-            graph::SystemSet::Named(name) => {
+            api::SystemSet::Named(name) => {
                 let set = SystemSet::Named(name.to_owned());
                 Ok(self.populate_set_nodes_inner(set))
             }
