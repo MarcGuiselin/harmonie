@@ -5,6 +5,8 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
+pub mod graph;
+
 mod utils;
 pub use utils::*;
 
@@ -40,7 +42,7 @@ impl<'a> fmt::Debug for StableId<'a> {
     }
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct OwnedStableId {
     pub crate_name: String,
     pub version: String,
@@ -77,6 +79,7 @@ pub trait HasStableId {
 }
 
 /// Identify systems
+/// TODO: Rename to Id, and rename all "id" to "system_id" since it's used for features now too
 #[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub struct SystemId(u64);
 
@@ -102,19 +105,21 @@ impl fmt::Debug for SystemId {
     }
 }
 
+// TODO: Remove
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct SystemDescriptor {
     pub id: SystemId,
     pub params: Vec<ParamDescriptor>,
 }
 
+// TODO: Remove
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct SetDescriptor {
     pub systems: Vec<SystemId>,
     // TODO: run conditions, order, etc
 }
 
-#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash)]
 pub enum ParamDescriptor {
     Command,
     // TODO: Query, Res, ResMut, etc
@@ -123,8 +128,7 @@ pub enum ParamDescriptor {
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct ScheduleDescriptor<'a> {
     pub id: StableId<'a>,
-    pub systems: Vec<SystemDescriptor>,
-    pub sets: Vec<SetDescriptor>,
+    pub schedule: graph::ScheduleGraph<'a>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

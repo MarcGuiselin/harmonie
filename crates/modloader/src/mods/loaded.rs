@@ -8,7 +8,7 @@ use harmony_modloader_api as api;
 use sha2::{Digest, Sha256};
 
 use super::Feature;
-use crate::schedule::LoadedSchedules;
+use crate::schedule::{LoadedSchedules, SchedulingError};
 
 // These fields are read by a debug macro
 #[allow(dead_code)]
@@ -114,4 +114,5 @@ pub enum LoadingError {
     InvalidWasm(wasmer::CompileError),
     MissmatchingDependencies,
     InvalidSchedule(api::OwnedStableId),
+    SchedulingError(SchedulingError),
 }
