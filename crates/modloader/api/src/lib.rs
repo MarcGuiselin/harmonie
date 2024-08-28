@@ -7,11 +7,11 @@ use std::{
 
 pub mod graph;
 
+mod identifiers;
+pub use identifiers::*;
+
 mod utils;
 pub use utils::*;
-
-mod schedule;
-pub use schedule::*;
 
 /// Identify structs
 #[derive(Encode, Decode, PartialEq, Eq, Hash)]
@@ -128,7 +128,7 @@ pub enum ParamDescriptor {
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct ScheduleDescriptor<'a> {
     pub id: StableId<'a>,
-    pub schedule: graph::ScheduleGraph<'a>,
+    pub schedule: graph::Graph<'a>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
