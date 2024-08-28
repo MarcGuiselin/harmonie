@@ -5,6 +5,8 @@ use bevy_ecs::system::ResMut;
 use bevy_ecs_macros::Resource;
 use bevy_tasks::{block_on, poll_once, AsyncComputeTaskPool, Task};
 
+pub(crate) mod schedule;
+
 mod feature;
 use bevy_utils::tracing::{error, info, warn};
 pub use feature::*;

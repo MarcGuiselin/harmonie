@@ -7,8 +7,10 @@ use bevy_utils::tracing::info;
 use harmony_modloader_api as api;
 use sha2::{Digest, Sha256};
 
-use super::Feature;
-use crate::schedule::{LoadedSchedules, SchedulingError};
+use super::{
+    schedule::{LoadedSchedules, SchedulingError},
+    Feature,
+};
 
 // These fields are read by a debug macro
 #[allow(dead_code)]

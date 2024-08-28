@@ -4,8 +4,6 @@ mod file_watcher;
 
 mod mods;
 
-mod schedule;
-
 pub struct ModloaderPlugin;
 
 impl Plugin for ModloaderPlugin {
