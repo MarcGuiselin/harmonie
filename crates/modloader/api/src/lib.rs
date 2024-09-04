@@ -15,7 +15,7 @@ mod utils;
 pub use utils::*;
 
 /// Identify structs
-#[derive(Encode, Decode, PartialEq, Eq, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct StableId<'a> {
     pub crate_name: &'a str,
     pub version: &'a str,
@@ -127,16 +127,10 @@ pub enum ParamDescriptor {
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
-pub struct ScheduleDescriptor<'a> {
-    pub id: StableId<'a>,
-    pub schedule: schedule::Schedule<'a>,
-}
-
-#[derive(Encode, Decode, PartialEq, Debug)]
 pub struct FeatureDescriptor<'a> {
     pub name: &'a str,
     pub resources: Vec<(StableId<'a>, Vec<u8>)>,
-    pub descriptors: Vec<ScheduleDescriptor<'a>>,
+    pub schedules: Vec<schedule::ScheduleDescriptor<'a>>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

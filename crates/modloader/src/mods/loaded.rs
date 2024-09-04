@@ -91,7 +91,7 @@ impl LoadedMod {
 
         let mut schedules = LoadedSchedules::new();
         for (feature_id, feature) in manifest.features.iter().enumerate() {
-            for descriptor in &feature.descriptors {
+            for descriptor in &feature.schedules {
                 schedules.add_from_descriptor(feature_id, descriptor)?;
             }
         }

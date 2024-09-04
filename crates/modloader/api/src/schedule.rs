@@ -1,7 +1,13 @@
 use super::*;
 
-/// Describes how to create a schedule
 #[derive(Encode, Decode, PartialEq, Debug)]
+pub struct ScheduleDescriptor<'a> {
+    pub id: StableId<'a>,
+    pub schedule: Schedule<'a>,
+}
+
+/// Describes how to create a schedule
+#[derive(Encode, Decode, PartialEq, Debug, Default)]
 pub struct Schedule<'a> {
     pub systems: Vec<System>,
     pub constraints: Vec<Constraint<'a>>,
