@@ -16,10 +16,7 @@ impl LoadedFeature {
     pub fn try_from_descriptor<'a>(
         descriptor: &api::FeatureDescriptor<'a>,
     ) -> Result<Self, LoadingError> {
-        let mut schedules = LoadedSchedules::new();
-        for schedule in descriptor.schedules.iter() {
-            schedules.add_from_descriptor(schedule)?;
-        }
+        let schedules = LoadedSchedules::try_from_schedule_descriptors(&descriptor.schedules)?;
 
         Ok(Self {
             name: descriptor.name.to_owned(),

@@ -10,36 +10,40 @@ use super::LoadingError;
 
 type Dag = DiGraphMap<Node, ()>;
 
+// These fields are read by a debug macro
+#[allow(dead_code)]
 #[derive(Debug)]
-pub struct LoadedSchedules(HashMap<api::OwnedStableId, Vec<LoadedSchedule>>);
+pub struct LoadedSchedules(HashMap<api::OwnedStableId, LoadedSchedule>);
 
 impl LoadedSchedules {
-    pub fn new() -> Self {
+    pub fn try_from_schedule_descriptors<'a>(
+        descriptors: &Vec<api::ScheduleDescriptor<'a>>,
+    ) -> Result<Self, LoadingError> {
         let mut schedules = HashMap::default();
 
         // Allow only the default schedules for now
         schedules.insert(Start.get_owned_stable_id(), Vec::new());
         schedules.insert(Update.get_owned_stable_id(), Vec::new());
 
-        Self(schedules)
-    }
+        // Group together schedules with the same schedule id
+        for descriptor in descriptors {
+            let schedule_id = descriptor.id.to_owned();
+            schedules
+                .get_mut(&schedule_id)
+                .ok_or(LoadingError::InvalidSchedule(schedule_id))?
+                .push(&descriptor.schedule);
+        }
 
-    pub fn add_from_descriptor<'a>(
-        &mut self,
-        descriptor: &api::ScheduleDescriptor<'a>,
-    ) -> Result<(), LoadingError> {
-        let schedule_id = descriptor.id.to_owned();
-        let schedules = self
-            .0
-            .get_mut(&schedule_id)
-            .ok_or(LoadingError::InvalidSchedule(schedule_id))?;
+        let mut inner = HashMap::default();
+        for (id, schedules) in schedules.into_iter().filter(|(_, v)| !v.is_empty()) {
+            if !schedules.is_empty() {
+                let loaded = LoadedSchedule::try_from_schedules(&schedules[..])
+                    .map_err(LoadingError::SchedulingError)?;
+                inner.insert(id, loaded);
+            }
+        }
 
-        schedules.push(
-            LoadedSchedule::try_from_graph(&descriptor.schedule)
-                .map_err(LoadingError::SchedulingError)?,
-        );
-
-        Ok(())
+        Ok(Self(inner))
     }
 }
 
@@ -49,12 +53,21 @@ pub struct LoadedSchedule {
 }
 
 impl LoadedSchedule {
-    pub fn try_from_graph(graph: &api::Schedule) -> Result<Self, SchedulingError> {
-        let mut builder = Builder::new(&graph);
+    pub fn try_from_schedules(schedules: &[&api::Schedule]) -> Result<Self, SchedulingError> {
+        let mut builder = Builder::default();
+
+        // Populate the dependency graph nodes
+        for schedule in schedules {
+            for system in schedule.systems.iter() {
+                builder.dependency.add_node(Node::System(system.id));
+            }
+        }
 
         // Add constraints to the dependency graph
-        for constraint in graph.constraints.iter() {
-            builder.add_constraint(constraint)?;
+        for schedule in schedules {
+            for constraint in schedule.constraints.iter() {
+                builder.add_constraint(constraint)?;
+            }
         }
 
         Ok(builder.build())
@@ -68,17 +81,6 @@ struct Builder {
 }
 
 impl Builder {
-    fn new(graph: &api::Schedule) -> Self {
-        let mut builder = Self::default();
-
-        // Populate the dependency graph nodes
-        for systems in graph.systems.iter() {
-            builder.dependency.add_node(Node::System(systems.id));
-        }
-
-        builder
-    }
-
     fn add_constraint(&mut self, constraint: &api::Constraint) -> Result<(), SchedulingError> {
         match constraint {
             api::Constraint::Before { a, b } => {
