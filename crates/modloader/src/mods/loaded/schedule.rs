@@ -58,7 +58,9 @@ pub struct LoadedSchedule {
 #[allow(dead_code)]
 #[derive(Debug)]
 struct LoadedSystem {
-    topological_order: usize,
+    /// Whether or not this system depends on any other system
+    /// In the case this is false, the scheduler can run this system first
+    is_dependent: bool,
     params: Vec<api::ParamDescriptor>,
 }
 
@@ -79,7 +81,7 @@ impl LoadedSchedule {
         for schedule in schedules {
             for api::System { id, params } in schedule.systems.iter() {
                 let system = loaded_schedules.systems.entry(*id).or_insert(LoadedSystem {
-                    topological_order: 0,
+                    is_dependent: false,
                     params: Vec::new(),
                 });
                 system.params = params.clone();
@@ -203,19 +205,24 @@ impl Builder {
 
         let mut systems = HashMap::new();
         let mut dependency = Dag::new();
-        for (topological_order, id) in reverse_nodes
+        let mut is_dependent = false;
+        for id in reverse_nodes
             .into_iter()
             .rev()
             .filter_map(|node| match node {
                 Node::System(system) => Some(system),
                 _ => None,
             })
-            .enumerate()
         {
+            is_dependent |= self
+                .dependency
+                .neighbors_directed(Node::System(id), Direction::Incoming)
+                .next()
+                .is_some();
             systems.insert(
                 id,
                 LoadedSystem {
-                    topological_order,
+                    is_dependent,
                     params: Vec::new(),
                 },
             );
