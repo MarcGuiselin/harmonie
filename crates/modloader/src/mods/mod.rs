@@ -4,15 +4,12 @@ use bevy_app::{App, Plugin, Update};
 use bevy_ecs::system::ResMut;
 use bevy_ecs_macros::Resource;
 use bevy_tasks::{block_on, poll_once, AsyncComputeTaskPool, Task};
-
-pub(crate) mod schedule;
-
-mod feature;
 use bevy_utils::tracing::{error, info, warn};
-pub use feature::*;
+
+mod schedule;
+pub(crate) use schedule::SchedulingError;
 
 mod loaded;
-pub use loaded::LoadingError;
 use loaded::{LoadedMod, LoadedModResult};
 
 pub(crate) struct ModPlugin;

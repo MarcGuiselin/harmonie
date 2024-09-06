@@ -1,17 +1,54 @@
 use std::hash::{Hash, Hasher};
 
 use bevy_utils::{HashMap, HashSet};
-use harmony_modloader_api as api;
+use harmony_modloader_api::{self as api, HasStableId, Start, Update};
 use petgraph::prelude::*;
+
+use crate::mods::SchedulingError;
+
+use super::LoadingError;
 
 type Dag = DiGraphMap<Node, ()>;
 
+#[derive(Debug)]
+pub struct LoadedSchedules(HashMap<api::OwnedStableId, Vec<LoadedSchedule>>);
+
+impl LoadedSchedules {
+    pub fn new() -> Self {
+        let mut schedules = HashMap::default();
+
+        // Allow only the default schedules for now
+        schedules.insert(Start.get_owned_stable_id(), Vec::new());
+        schedules.insert(Update.get_owned_stable_id(), Vec::new());
+
+        Self(schedules)
+    }
+
+    pub fn add_from_descriptor<'a>(
+        &mut self,
+        descriptor: &api::ScheduleDescriptor<'a>,
+    ) -> Result<(), LoadingError> {
+        let schedule_id = descriptor.id.to_owned();
+        let schedules = self
+            .0
+            .get_mut(&schedule_id)
+            .ok_or(LoadingError::InvalidSchedule(schedule_id))?;
+
+        schedules.push(
+            LoadedSchedule::try_from_graph(&descriptor.schedule)
+                .map_err(LoadingError::SchedulingError)?,
+        );
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Default)]
-pub struct ScheduleGraph {
+pub struct LoadedSchedule {
     // TODO
 }
 
-impl ScheduleGraph {
+impl LoadedSchedule {
     pub fn try_from_graph(graph: &api::Schedule) -> Result<Self, SchedulingError> {
         let mut builder = Builder::new(&graph);
 
@@ -127,7 +164,7 @@ impl Builder {
         (Node::SetStart(id), Node::SetEnd(id))
     }
 
-    fn build(self) -> ScheduleGraph {
+    fn build(self) -> LoadedSchedule {
         unimplemented!()
     }
 }
@@ -162,16 +199,4 @@ enum Node {
     System(api::SystemId),
     SetStart(usize),
     SetEnd(usize),
-}
-
-// These fields are read by a debug macro
-#[allow(dead_code)]
-#[derive(Debug)]
-pub enum SchedulingError {
-    SystemDeclaredTwice(api::SystemId),
-    Cycles {
-        named_set: Option<String>,
-        scc_with_cycles: Vec<Vec<Node>>,
-    },
-    EmptyAnonymousSet,
 }
