@@ -34,7 +34,7 @@ impl LoadedSchedules {
         }
 
         let mut inner = HashMap::default();
-        for (id, schedules) in schedules.into_iter().filter(|(_, v)| !v.is_empty()) {
+        for (id, schedules) in schedules.into_iter() {
             if !schedules.is_empty() {
                 let loaded = LoadedSchedule::try_from_schedules(&schedules[..])
                     .map_err(LoadingError::SchedulingError)?;
@@ -278,11 +278,6 @@ impl Hash for SystemSet {
             Self::Named(id) => id.hash(state),
         }
     }
-}
-
-struct System {
-    params: Vec<api::ParamDescriptor>,
-    run_conditions: Vec<api::SystemId>,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]

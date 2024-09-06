@@ -80,7 +80,6 @@ pub trait HasStableId {
 }
 
 /// Identify systems
-/// TODO: Rename to Id, and rename all "id" to "system_id" since it's used for features now too
 #[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub struct SystemId(u64);
 
@@ -104,20 +103,6 @@ impl fmt::Debug for SystemId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "SystemId(\"{:x}\")", self.0)
     }
-}
-
-// TODO: Remove
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub struct SystemDescriptor {
-    pub id: SystemId,
-    pub params: Vec<ParamDescriptor>,
-}
-
-// TODO: Remove
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub struct SetDescriptor {
-    pub systems: Vec<SystemId>,
-    // TODO: run conditions, order, etc
 }
 
 #[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash)]
