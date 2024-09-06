@@ -66,13 +66,6 @@ impl LoadedSchedule {
     pub fn try_from_schedules(schedules: &[&api::Schedule]) -> Result<Self, SchedulingError> {
         let mut builder = Builder::default();
 
-        // Populate the dependency graph nodes
-        for schedule in schedules {
-            for system in schedule.systems.iter() {
-                builder.dependency.add_node(Node::System(system.id));
-            }
-        }
-
         // Add constraints to the dependency graph
         for schedule in schedules {
             for constraint in schedule.constraints.iter() {
@@ -85,10 +78,11 @@ impl LoadedSchedule {
         // Add missing parameters to the systems
         for schedule in schedules {
             for api::System { id, params } in schedule.systems.iter() {
-                loaded_schedules
-                    .systems
-                    .entry(*id)
-                    .and_modify(|system| system.params = params.clone());
+                let system = loaded_schedules.systems.entry(*id).or_insert(LoadedSystem {
+                    topological_order: 0,
+                    params: Vec::new(),
+                });
+                system.params = params.clone();
             }
         }
 
@@ -144,7 +138,6 @@ impl Builder {
                 0 => Err(SchedulingError::EmptyAnonymousSet),
                 1 => {
                     let id = Node::System(systems[0]);
-                    self.dependency.add_node(id);
                     Ok((id, id))
                 }
                 _ => {
@@ -167,14 +160,9 @@ impl Builder {
         let id = self.sets.get(&set).map(|id| *id).unwrap_or_else(|| {
             let id = self.sets.len();
 
-            // Create a before and after node for the anonymous set
-            self.dependency.add_node(Node::SetStart(id));
-            self.dependency.add_node(Node::SetEnd(id));
-
             // If this is an anonymous set, link its dependencies
             if let SystemSet::Anonymous(systems) = &set {
                 for system in systems {
-                    self.dependency.add_node(Node::System(*system));
                     self.dependency
                         .add_edge(Node::SetStart(id), Node::System(*system), ());
                     self.dependency
