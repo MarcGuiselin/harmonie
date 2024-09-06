@@ -2,13 +2,12 @@ use std::hash::{Hash, Hasher};
 
 use bevy_utils::{HashMap, HashSet};
 use harmony_modloader_api::{self as api, HasStableId, Start, Update};
-use petgraph::prelude::*;
-
-use crate::mods::SchedulingError;
+use petgraph::{algo::TarjanScc, prelude::*};
 
 use super::LoadingError;
+use crate::mods::{Cycle, SchedulingError};
 
-type Dag = DiGraphMap<Node, ()>;
+type Dag<T> = DiGraphMap<T, ()>;
 
 // These fields are read by a debug macro
 #[allow(dead_code)]
@@ -47,9 +46,20 @@ impl LoadedSchedules {
     }
 }
 
-#[derive(Debug, Default)]
+// These fields are read by a debug macro
+#[allow(dead_code)]
+#[derive(Debug)]
 pub struct LoadedSchedule {
-    // TODO
+    systems: HashMap<api::SystemId, LoadedSystem>,
+    dependency: Dag<api::SystemId>,
+}
+
+// These fields are read by a debug macro
+#[allow(dead_code)]
+#[derive(Debug)]
+struct LoadedSystem {
+    topological_order: usize,
+    params: Vec<api::ParamDescriptor>,
 }
 
 impl LoadedSchedule {
@@ -70,13 +80,25 @@ impl LoadedSchedule {
             }
         }
 
-        Ok(builder.build())
+        let mut loaded_schedules = builder.build()?;
+
+        // Add missing parameters to the systems
+        for schedule in schedules {
+            for api::System { id, params } in schedule.systems.iter() {
+                loaded_schedules
+                    .systems
+                    .entry(*id)
+                    .and_modify(|system| system.params = params.clone());
+            }
+        }
+
+        Ok(loaded_schedules)
     }
 }
 
 #[derive(Default)]
 struct Builder {
-    dependency: Dag,
+    dependency: Dag<Node>,
     sets: HashMap<SystemSet, usize>,
 }
 
@@ -166,8 +188,75 @@ impl Builder {
         (Node::SetStart(id), Node::SetEnd(id))
     }
 
-    fn build(self) -> LoadedSchedule {
-        unimplemented!()
+    fn build(self) -> Result<LoadedSchedule, SchedulingError> {
+        let mut cycles = Vec::new();
+        let mut reverse_nodes = Vec::with_capacity(self.dependency.node_count());
+        TarjanScc::new().run(&self.dependency, |scc| {
+            if scc.len() == 1 {
+                reverse_nodes.push(scc[0]);
+            } else {
+                cycles.push(Cycle(
+                    scc.iter()
+                        .filter_map(|node| match node {
+                            Node::System(system) => Some(*system),
+                            _ => None,
+                        })
+                        .collect(),
+                ));
+            }
+        });
+
+        if !cycles.is_empty() {
+            return Err(SchedulingError::Cycles {
+                named_set: None,
+                cycles,
+            });
+        }
+
+        let mut systems = HashMap::new();
+        let mut dependency = Dag::new();
+        for (topological_order, id) in reverse_nodes
+            .into_iter()
+            .rev()
+            .filter_map(|node| match node {
+                Node::System(system) => Some(system),
+                _ => None,
+            })
+            .enumerate()
+        {
+            systems.insert(
+                id,
+                LoadedSystem {
+                    topological_order,
+                    params: Vec::new(),
+                },
+            );
+            self.add_node_dependents_to_flattened(&mut dependency, id, Node::System(id));
+        }
+
+        Ok(LoadedSchedule {
+            systems,
+            dependency,
+        })
+    }
+
+    fn add_node_dependents_to_flattened(
+        &self,
+        dependency: &mut Dag<api::SystemId>,
+        parent: api::SystemId,
+        node: Node,
+    ) {
+        for child in self
+            .dependency
+            .neighbors_directed(node, Direction::Outgoing)
+        {
+            match child {
+                Node::System(system) => {
+                    dependency.add_edge(parent, system, ());
+                }
+                _ => self.add_node_dependents_to_flattened(dependency, parent, child),
+            }
+        }
     }
 }
 

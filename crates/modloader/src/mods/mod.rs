@@ -7,7 +7,7 @@ use bevy_tasks::{block_on, poll_once, AsyncComputeTaskPool, Task};
 use bevy_utils::tracing::{error, info, warn};
 
 mod schedule;
-pub(crate) use schedule::SchedulingError;
+pub(crate) use schedule::{Cycle, SchedulingError};
 
 mod loaded;
 use loaded::{LoadedMod, LoadedModResult};

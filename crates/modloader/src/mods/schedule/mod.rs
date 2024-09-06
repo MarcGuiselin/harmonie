@@ -7,7 +7,12 @@ pub enum SchedulingError {
     SystemDeclaredTwice(api::SystemId),
     Cycles {
         named_set: Option<String>,
-        scc_with_cycles: (),
+        cycles: Vec<Cycle>,
     },
     EmptyAnonymousSet,
 }
+
+// These fields are read by a debug macro
+#[allow(dead_code)]
+#[derive(Debug)]
+pub struct Cycle(pub Vec<api::SystemId>);
