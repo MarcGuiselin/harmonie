@@ -8,7 +8,7 @@ pub trait Feature: api::HasStableId {
 pub struct FeatureBuilder {
     pub(crate) name: &'static str,
     pub(crate) resources: Vec<(api::StableId<'static>, Vec<u8>)>,
-    #[cfg(not(feature = "generate_manifest"))]
+    #[cfg(feature = "wasm_runtime")]
     pub(crate) boxed_systems: Vec<BoxedSystem>,
     #[cfg(feature = "generate_manifest")]
     pub(crate) schedules: Vec<api::ScheduleDescriptor<'static>>,
@@ -19,7 +19,7 @@ impl Default for FeatureBuilder {
         Self {
             name: "",
             resources: Vec::new(),
-            #[cfg(not(feature = "generate_manifest"))]
+            #[cfg(feature = "wasm_runtime")]
             boxed_systems: Vec::new(),
             #[cfg(feature = "generate_manifest")]
             schedules: Vec::new(),
@@ -57,9 +57,12 @@ impl FeatureBuilder {
         schedule: S,
         systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self {
+        let _schedule = schedule;
+        let _systems = systems;
+
         #[cfg(feature = "generate_manifest")]
         {
-            let id = schedule.get_stable_id();
+            let id = _schedule.get_stable_id();
             let descriptor = crate::utils::find_mut_or_push(
                 &mut self.schedules,
                 |s| s.id == id,
@@ -69,12 +72,11 @@ impl FeatureBuilder {
                 },
             );
 
-            IntoSystemConfigs::add_to_schedule(systems, &mut descriptor.schedule);
+            IntoSystemConfigs::add_to_schedule(_systems, &mut descriptor.schedule);
         }
-        #[cfg(not(feature = "generate_manifest"))]
+        #[cfg(feature = "wasm_runtime")]
         {
-            let _ = schedule;
-            IntoSystemConfigs::add_to_boxed_systems(systems, &mut self.boxed_systems);
+            IntoSystemConfigs::add_to_boxed_systems(_systems, &mut self.boxed_systems);
         }
         self
     }

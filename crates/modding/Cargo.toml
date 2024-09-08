@@ -11,3 +11,4 @@ bevy_utils_proc_macros = "0.14"
 
 [features]
 generate_manifest = []
+wasm_runtime = []

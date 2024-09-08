@@ -11,7 +11,7 @@ static mut RUNTIME: Option<Runtime> = None;
 
 /// Initializes the internal execution runtime
 #[doc(hidden)]
-#[cfg(not(feature = "generate_manifest"))]
+#[cfg(feature = "wasm_runtime")]
 pub fn __internal_initialize_runtime(harmony: Harmony) {
     let systems = harmony
         .features
@@ -26,7 +26,7 @@ pub fn __internal_initialize_runtime(harmony: Harmony) {
 }
 
 #[doc(hidden)]
-#[cfg(feature = "generate_manifest")]
+#[cfg(not(feature = "wasm_runtime"))]
 pub fn __internal_initialize_runtime(_: Harmony) {
     unreachable!()
 }

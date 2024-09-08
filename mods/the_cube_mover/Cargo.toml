@@ -9,5 +9,13 @@ crate-type = ["cdylib"]
 [dependencies]
 harmony_modding = { path = "../../crates/modding" }
 
+bitcode = { version = "0", features = ["derive"] }
+
 # Define mod imports here
 the_cube = { path = "../the_cube" }
+
+[features]
+# these features are used for building mods
+# DO NOT REMOVE!!
+wasm_runtime = ["harmony_modding/wasm_runtime"]
+generate_manifest = ["harmony_modding/generate_manifest"]

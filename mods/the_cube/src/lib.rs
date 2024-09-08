@@ -11,7 +11,7 @@ pub extern "C" fn harmony_mod_generate_manifest() {
 
 #[no_mangle]
 #[doc(hidden)]
-#[cfg(not(feature = "generate_manifest"))]
+#[cfg(feature = "wasm_runtime")]
 pub extern "C" fn harmony_mod_initialize_runtime() {
     let mut engine = harmony_modding::init::__internal_new_engine();
     init(&mut engine);
@@ -20,9 +20,16 @@ pub extern "C" fn harmony_mod_initialize_runtime() {
 
 #[no_mangle]
 #[doc(hidden)]
-#[cfg(not(feature = "generate_manifest"))]
+#[cfg(feature = "wasm_runtime")]
 pub unsafe extern "C" fn harmony_mod_run_system(index: u32) {
     harmony_modding::init::__internal_run_system(index as _);
+}
+
+#[cfg(not(any(feature = "generate_manifest", feature = "wasm_runtime")))]
+#[allow(dead_code)]
+fn __() {
+    // Removes the warning about unused function "init"
+    init(&mut harmony_modding::init::__internal_new_engine());
 }
 
 fn init(engine: &mut Harmony) {

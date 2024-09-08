@@ -1,5 +1,10 @@
 #![allow(dead_code)] // TODO: remove
 
+#[cfg(all(feature = "generate_manifest", feature = "wasm_runtime"))]
+compile_error!(
+    "Features \"generate_manifest\" and \"wasm_runtime\" cannot be enabled at the same time"
+);
+
 pub mod ecs;
 pub mod init;
 pub(crate) mod utils;
