@@ -7,8 +7,12 @@ use bevy_utils::tracing::info;
 use harmony_modloader_api as api;
 use sha2::{Digest, Sha256};
 
-use super::Feature;
-use crate::schedule::LoadedSchedules;
+mod feature;
+pub use feature::LoadedFeature;
+
+use super::SchedulingError;
+
+pub mod schedule;
 
 // These fields are read by a debug macro
 #[allow(dead_code)]
@@ -16,8 +20,7 @@ use crate::schedule::LoadedSchedules;
 pub struct LoadedMod {
     pub(super) manifest_hash: api::FileHash,
     module: wasmer::Module,
-    features: Vec<Feature>,
-    schedules: LoadedSchedules,
+    features: Vec<LoadedFeature>,
 }
 
 impl PartialEq for LoadedMod {
@@ -81,24 +84,15 @@ impl LoadedMod {
         let store = wasmer::Store::default();
         let module = wasmer::Module::new(&store, wasm_bytes).map_err(LoadingError::InvalidWasm)?;
 
-        let features = manifest
-            .features
-            .iter()
-            .map(Feature::from_descriptor)
-            .collect();
-
-        let mut schedules = LoadedSchedules::new();
-        for (feature_id, feature) in manifest.features.iter().enumerate() {
-            for descriptor in &feature.descriptors {
-                schedules.add_from_descriptor(feature_id, descriptor)?;
-            }
+        let mut features = Vec::with_capacity(manifest.features.len());
+        for feature in manifest.features.iter() {
+            features.push(LoadedFeature::try_from_descriptor(feature)?);
         }
 
         Ok(Self {
             manifest_hash,
             module,
             features,
-            schedules,
         })
     }
 }
@@ -114,4 +108,5 @@ pub enum LoadingError {
     InvalidWasm(wasmer::CompileError),
     MissmatchingDependencies,
     InvalidSchedule(api::OwnedStableId),
+    SchedulingError(SchedulingError),
 }

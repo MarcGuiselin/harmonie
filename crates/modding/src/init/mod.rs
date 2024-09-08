@@ -27,11 +27,7 @@ impl std::fmt::Debug for Harmony {
 
 impl Harmony {
     pub fn add_feature<F: Feature>(&mut self, feature: F) -> &mut Self {
-        let mut builder = FeatureBuilder {
-            name: "Unnammed",
-            descriptors: vec![],
-            resources: vec![],
-        };
+        let mut builder = FeatureBuilder::default();
         feature.build(&mut builder);
         self.features.push(builder);
         self

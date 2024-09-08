@@ -5,14 +5,17 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
-mod utils;
-pub use utils::*;
-
 mod schedule;
 pub use schedule::*;
 
+mod identifiers;
+pub use identifiers::*;
+
+mod utils;
+pub use utils::*;
+
 /// Identify structs
-#[derive(Encode, Decode, PartialEq, Eq, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct StableId<'a> {
     pub crate_name: &'a str,
     pub version: &'a str,
@@ -40,7 +43,7 @@ impl<'a> fmt::Debug for StableId<'a> {
     }
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct OwnedStableId {
     pub crate_name: String,
     pub version: String,
@@ -102,36 +105,17 @@ impl fmt::Debug for SystemId {
     }
 }
 
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub struct SystemDescriptor {
-    pub id: SystemId,
-    pub params: Vec<ParamDescriptor>,
-}
-
-#[derive(Encode, Decode, PartialEq, Debug)]
-pub struct SetDescriptor {
-    pub systems: Vec<SystemId>,
-    // TODO: run conditions, order, etc
-}
-
-#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash)]
 pub enum ParamDescriptor {
     Command,
     // TODO: Query, Res, ResMut, etc
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
-pub struct ScheduleDescriptor<'a> {
-    pub id: StableId<'a>,
-    pub systems: Vec<SystemDescriptor>,
-    pub sets: Vec<SetDescriptor>,
-}
-
-#[derive(Encode, Decode, PartialEq, Debug)]
 pub struct FeatureDescriptor<'a> {
     pub name: &'a str,
     pub resources: Vec<(StableId<'a>, Vec<u8>)>,
-    pub descriptors: Vec<ScheduleDescriptor<'a>>,
+    pub schedules: Vec<schedule::ScheduleDescriptor<'a>>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

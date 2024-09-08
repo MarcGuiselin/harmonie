@@ -1,7 +1,4 @@
-use crate::ecs::{
-    system::{Descriptors, IntoDescriptors},
-    Resource,
-};
+use crate::ecs::{system::*, Resource};
 use harmony_modloader_api as api;
 
 pub trait Feature: api::HasStableId {
@@ -11,16 +8,35 @@ pub trait Feature: api::HasStableId {
 pub struct FeatureBuilder {
     pub(crate) name: &'static str,
     pub(crate) resources: Vec<(api::StableId<'static>, Vec<u8>)>,
-    pub(crate) descriptors: Vec<(api::StableId<'static>, Descriptors)>,
+    #[cfg(not(feature = "generate_manifest"))]
+    pub(crate) boxed_systems: Vec<BoxedSystem>,
+    #[cfg(feature = "generate_manifest")]
+    pub(crate) schedules: Vec<api::ScheduleDescriptor<'static>>,
+}
+
+impl Default for FeatureBuilder {
+    fn default() -> Self {
+        Self {
+            name: "",
+            resources: Vec::new(),
+            #[cfg(not(feature = "generate_manifest"))]
+            boxed_systems: Vec::new(),
+            #[cfg(feature = "generate_manifest")]
+            schedules: Vec::new(),
+        }
+    }
 }
 
 impl std::fmt::Debug for FeatureBuilder {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("FeatureBuilder")
-            .field("name", &self.name)
-            .field("resources", &self.resources)
-            .field("descriptors", &self.descriptors)
-            .finish()
+        let mut debug = f.debug_struct("FeatureBuilder");
+        debug.field("name", &self.name);
+        debug.field("resources", &self.resources);
+
+        #[cfg(feature = "generate_manifest")]
+        debug.field("schedules", &self.schedules);
+
+        debug.finish()
     }
 }
 
@@ -39,23 +55,26 @@ impl FeatureBuilder {
     pub fn add_systems<S: api::ScheduleLabel, M>(
         &mut self,
         schedule: S,
-        systems: impl IntoDescriptors<M>,
+        systems: impl IntoSystemConfigs<M>,
     ) -> &mut Self {
-        let schedule = schedule.get_stable_id();
-        let descriptors = IntoDescriptors::into_descriptors(systems);
+        #[cfg(feature = "generate_manifest")]
+        {
+            let id = schedule.get_stable_id();
+            let descriptor = crate::utils::find_mut_or_push(
+                &mut self.schedules,
+                |s| s.id == id,
+                || api::ScheduleDescriptor {
+                    id,
+                    schedule: Default::default(),
+                },
+            );
 
-        self.add_descriptor(schedule, descriptors)
-    }
-
-    fn add_descriptor(
-        &mut self,
-        schedule: api::StableId<'static>,
-        descriptors: Descriptors,
-    ) -> &mut Self {
-        if let Some((_, desc)) = self.descriptors.iter_mut().find(|(id, _)| *id == schedule) {
-            desc.push(descriptors);
-        } else {
-            self.descriptors.push((schedule, descriptors));
+            IntoSystemConfigs::add_to_schedule(systems, &mut descriptor.schedule);
+        }
+        #[cfg(not(feature = "generate_manifest"))]
+        {
+            let _ = schedule;
+            IntoSystemConfigs::add_to_boxed_systems(systems, &mut self.boxed_systems);
         }
         self
     }

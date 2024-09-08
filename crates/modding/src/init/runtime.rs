@@ -11,19 +11,24 @@ static mut RUNTIME: Option<Runtime> = None;
 
 /// Initializes the internal execution runtime
 #[doc(hidden)]
+#[cfg(not(feature = "generate_manifest"))]
 pub fn __internal_initialize_runtime(harmony: Harmony) {
     let systems = harmony
         .features
         .into_iter()
-        .flat_map(|feature| feature.descriptors.into_iter())
-        .flat_map(|(_, descriptor)| descriptor.systems.into_iter())
-        .map(|(_, system)| system)
-        .collect();
+        .flat_map(|f| f.boxed_systems)
+        .collect::<Vec<_>>();
 
     // SAFETY: This is a single-threaded environment
     unsafe {
         RUNTIME = Some(Runtime { systems });
     }
+}
+
+#[doc(hidden)]
+#[cfg(feature = "generate_manifest")]
+pub fn __internal_initialize_runtime(_: Harmony) {
+    unreachable!()
 }
 
 /// Runs a system by its index

@@ -2,6 +2,7 @@
 
 pub mod ecs;
 pub mod init;
+pub(crate) mod utils;
 
 pub mod prelude {
     pub use crate::ecs::{system::Commands, Component};

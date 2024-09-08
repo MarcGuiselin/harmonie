@@ -1,23 +1,45 @@
-use crate::HasStableId;
+use super::*;
 
-pub trait ScheduleLabel
-where
-    Self: HasStableId,
-{
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub struct ScheduleDescriptor<'a> {
+    pub id: StableId<'a>,
+    pub schedule: Schedule<'a>,
 }
 
-pub struct Start;
-impl HasStableId for Start {
-    const CRATE_NAME: &'static str = "core";
-    const VERSION: &'static str = "v0.0.0";
-    const NAME: &'static str = "Start";
+/// Describes how to create a schedule
+#[derive(Encode, Decode, PartialEq, Debug, Default)]
+pub struct Schedule<'a> {
+    pub systems: Vec<System>,
+    pub constraints: Vec<Constraint<'a>>,
 }
-impl ScheduleLabel for Start {}
 
-pub struct Update;
-impl HasStableId for Update {
-    const CRATE_NAME: &'static str = "core";
-    const VERSION: &'static str = "v0.0.0";
-    const NAME: &'static str = "Update";
+/// Constraints that define the order of systems in the schedule
+///
+/// These must always be checked for validity before being loaded by the modloader
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub enum Constraint<'a> {
+    /// System set A needs to run before system set B
+    Before { a: SystemSet<'a>, b: SystemSet<'a> },
+    /// System set needs to run only if the condition is met
+    Condition {
+        set: SystemSet<'a>,
+        condition: SystemId,
+    },
+    /// A system set is included in a named set
+    Includes {
+        parent_name: StableId<'a>,
+        set: SystemSet<'a>,
+    },
 }
-impl ScheduleLabel for Update {}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub struct System {
+    pub id: SystemId,
+    pub params: Vec<ParamDescriptor>,
+}
+
+#[derive(Encode, Decode, PartialEq, Debug)]
+pub enum SystemSet<'a> {
+    Anonymous(Vec<SystemId>),
+    Named(StableId<'a>),
+}

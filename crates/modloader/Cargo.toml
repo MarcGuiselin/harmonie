@@ -17,5 +17,6 @@ bevy_utils = "0.14"
 bitcode = { version = "0", features = ["derive"] }
 futures-lite = "2.3"
 notify = "6"
+petgraph = "0.6"
 sha2 = "0.10"
 wasmer = "4.3"

@@ -1,13 +1,13 @@
-mod descriptor;
 mod function_system;
 mod params;
 mod system;
+mod system_config;
 mod system_param;
 
-pub use descriptor::{Descriptors, IntoDescriptors};
 pub use function_system::FunctionSystem;
 pub use params::*;
 pub use system::{BoxedSystem, ParamDescriptors, System};
+pub use system_config::IntoSystemConfigs;
 pub use system_param::SystemParam;
 
 #[diagnostic::on_unimplemented(
