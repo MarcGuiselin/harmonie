@@ -142,6 +142,7 @@ async fn final_processing(
     Ok(())
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum BuildType {
     Debug,
     Release,
@@ -158,15 +159,18 @@ async fn build_raw(directory: PathBuf, packages: Vec<String>, build_type: BuildT
         .env("RUSTFLAGS", "-C link-arg=--import-memory")
         .stderr(Stdio::piped());
 
-    match build_type {
-        BuildType::Debug => {}
-        BuildType::Release => {
-            command.inner.arg("--release");
-        }
-        BuildType::GenerateManifest => {
-            command.inner.args(&["--features", "generate_manifest"]);
-        }
-    };
+    command
+        .inner
+        .arg("--features")
+        .arg(if build_type == BuildType::GenerateManifest {
+            "generate_manifest"
+        } else {
+            "wasm_runtime"
+        });
+
+    if build_type == BuildType::Release {
+        command.inner.arg("--release");
+    }
 
     let mut child = command.inner.spawn()?;
 
