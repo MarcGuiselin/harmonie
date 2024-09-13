@@ -1,10 +1,15 @@
-# A hyper-sophisticated bevy modloader
+# Harmony modloader
 
-A WIP bevy modding system using wasm micro-modules. Keep bevy's ergonomic api for your modders.
+A familiar, yet powerful take on a modding system for the Bevy game engine 🫰
 
-Featuring configurable mod permissions.
+> **⚠️This is a work-in-progress**
 
-This (will eventually) come with first class support for:
+A bevy modding system using wasm micro-modules. Keep bevy's ergonomic design for your modders (and yourself 😏).
+
+This will eventually come with first class support for:
 
 - Configurable mod permissions
 - Authentication and mod signing
+- Automatic updates
+- Hot reloading
+- And more yet to come!
