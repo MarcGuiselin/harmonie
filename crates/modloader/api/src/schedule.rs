@@ -18,8 +18,11 @@ pub struct Schedule<'a> {
 /// These must always be checked for validity before being loaded by the modloader
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub enum Constraint<'a> {
-    /// System set A needs to run before system set B
-    Before { a: SystemSet<'a>, b: SystemSet<'a> },
+    /// One system set needs to run before another system set
+    Order {
+        before: SystemSet<'a>,
+        after: SystemSet<'a>,
+    },
     /// System set needs to run only if the condition is met
     Condition {
         set: SystemSet<'a>,

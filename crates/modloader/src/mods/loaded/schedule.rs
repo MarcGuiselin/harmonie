@@ -101,19 +101,17 @@ struct Builder {
 impl Builder {
     fn add_constraint(&mut self, constraint: &api::Constraint) -> Result<(), SchedulingError> {
         match constraint {
-            api::Constraint::Before { a, b } => {
-                let (_, end_a) = self.populate_set_nodes(a)?;
-                let (start_b, _) = self.populate_set_nodes(b)?;
-
-                // The last node of a must run before the first node of b
-                self.dependency.add_edge(end_a, start_b, ());
+            api::Constraint::Order { before, after } => {
+                let (_, before) = self.populate_set_nodes(before)?;
+                let (after, _) = self.populate_set_nodes(after)?;
+                self.dependency.add_edge(before, after, ());
             }
             api::Constraint::Condition { set, condition } => {
                 let condition = Node::System(*condition);
-                let (start_set, _) = self.populate_set_nodes(set)?;
+                let (after, _) = self.populate_set_nodes(set)?;
 
                 // The condition must run before the first node of the set
-                self.dependency.add_edge(condition, start_set, ());
+                self.dependency.add_edge(condition, after, ());
             }
             api::Constraint::Includes { parent_name, set } => {
                 let parent = SystemSet::Named(parent_name.to_owned());
@@ -130,7 +128,7 @@ impl Builder {
         Ok(())
     }
 
-    /// For a given set, resolves the start and end nodes
+    /// For a given set, resolves the before and after nodes
     fn populate_set_nodes(
         &mut self,
         set: &api::SystemSet,
