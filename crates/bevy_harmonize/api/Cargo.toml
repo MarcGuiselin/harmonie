@@ -1,0 +1,14 @@
+[package]
+name = "bevy_harmonize_api"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+common = { package = "bevy_harmonize_common", path = "../common" }
+
+bitcode = { version = "0", features = ["derive"] }
+bevy_utils_proc_macros = "0.14"
+
+[features]
+generate_manifest = []
+wasm_runtime = []

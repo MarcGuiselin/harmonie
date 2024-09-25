@@ -5,7 +5,7 @@ fn main() {
     App::new()
         .add_plugins((
             MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs(1))),
-            harmony_modloader::ModloaderPlugin,
+            bevy_harmonize::ModloaderPlugin,
             LogPlugin::default(),
         ))
         .add_systems(Startup, build_mods)
@@ -17,7 +17,7 @@ fn build_mods() {
         let debug = cfg!(debug_assertions);
         let directory = std::env::current_dir()?;
         let packages = vec!["the_cube".into()];
-        harmony_modloader_build::build(!debug, directory, packages).await?;
+        bevy_harmonize_build::build(!debug, directory, packages).await?;
 
         Ok(())
     }

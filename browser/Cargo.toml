@@ -10,5 +10,5 @@ bevy = { version = "0.14", default-features = false, features = [
     "multi_threaded",
 ] }
 
-harmony_modloader = { path = "../crates/modloader" }
-harmony_modloader_build = { path = "../crates/modloader/build" }
+bevy_harmonize = { path = "../crates/bevy_harmonize" }
+bevy_harmonize_build = { path = "../crates/bevy_harmonize/build" }

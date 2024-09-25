@@ -3,9 +3,9 @@ resolver = "2"
 members = [
     "browser",
     "crates/*",
-    # "crates/modding/macros",
-    "crates/modloader/api",
-    "crates/modloader/build",
+    "crates/bevy_harmonize/api",
+    "crates/bevy_harmonize/build",
+    "crates/bevy_harmonize/common",
     "mods/*",
 ]
 

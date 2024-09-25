@@ -1,0 +1,22 @@
+[package]
+name = "bevy_harmonize"
+description = "A minimal ecs runtime for harmony mods"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+common = { package = "bevy_harmonize_common", path = "common" }
+
+async-channel = "2.3"
+async-fs = "2.1"
+bevy_app = "0.14"
+bevy_ecs = "0.14"
+bevy_ecs_macros = "0.14"
+bevy_tasks = "0.14"
+bevy_utils = "0.14"
+bitcode = { version = "0", features = ["derive"] }
+futures-lite = "2.3"
+notify = "6"
+petgraph = "0.6"
+sha2 = "0.10"
+wasmer = "4.3"

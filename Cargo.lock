@@ -570,6 +570,58 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_harmonize"
+version = "0.0.0"
+dependencies = [
+ "async-channel 2.3.1",
+ "async-fs",
+ "bevy_app",
+ "bevy_ecs",
+ "bevy_ecs_macros",
+ "bevy_harmonize_common",
+ "bevy_tasks",
+ "bevy_utils",
+ "bitcode",
+ "futures-lite 2.3.0",
+ "notify",
+ "petgraph",
+ "sha2",
+ "wasmer",
+]
+
+[[package]]
+name = "bevy_harmonize_api"
+version = "0.0.0"
+dependencies = [
+ "bevy_harmonize_common",
+ "bevy_utils_proc_macros",
+ "bitcode",
+]
+
+[[package]]
+name = "bevy_harmonize_build"
+version = "0.0.0"
+dependencies = [
+ "async-fs",
+ "async-process",
+ "async-std",
+ "bevy_harmonize_common",
+ "bevy_utils",
+ "bitcode",
+ "futures-concurrency",
+ "futures-lite 2.3.0",
+ "sha2",
+ "wasmer",
+]
+
+[[package]]
+name = "bevy_harmonize_common"
+version = "0.0.0"
+dependencies = [
+ "bitcode",
+]
+
+[[package]]
 name = "bevy_hierarchy"
 version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2015,60 +2067,8 @@ name = "harmony_browser"
 version = "0.0.0"
 dependencies = [
  "bevy",
- "harmony_modloader",
- "harmony_modloader_build",
-]
-
-[[package]]
-name = "harmony_modding"
-version = "0.0.0"
-dependencies = [
- "bevy_utils_proc_macros",
- "bitcode",
- "harmony_modloader_api",
-]
-
-[[package]]
-name = "harmony_modloader"
-version = "0.0.0"
-dependencies = [
- "async-channel 2.3.1",
- "async-fs",
- "bevy_app",
- "bevy_ecs",
- "bevy_ecs_macros",
- "bevy_tasks",
- "bevy_utils",
- "bitcode",
- "futures-lite 2.3.0",
- "harmony_modloader_api",
- "notify",
- "petgraph",
- "sha2",
- "wasmer",
-]
-
-[[package]]
-name = "harmony_modloader_api"
-version = "0.0.0"
-dependencies = [
- "bitcode",
-]
-
-[[package]]
-name = "harmony_modloader_build"
-version = "0.0.0"
-dependencies = [
- "async-fs",
- "async-process",
- "async-std",
- "bevy_utils",
- "bitcode",
- "futures-concurrency",
- "futures-lite 2.3.0",
- "harmony_modloader_api",
- "sha2",
- "wasmer",
+ "bevy_harmonize",
+ "bevy_harmonize_build",
 ]
 
 [[package]]
@@ -3526,16 +3526,16 @@ dependencies = [
 name = "the_cube"
 version = "0.0.0"
 dependencies = [
+ "bevy_harmonize_api",
  "bitcode",
- "harmony_modding",
 ]
 
 [[package]]
 name = "the_cube_mover"
 version = "0.0.0"
 dependencies = [
+ "bevy_harmonize_api",
  "bitcode",
- "harmony_modding",
  "the_cube",
 ]
 

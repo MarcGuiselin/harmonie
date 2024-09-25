@@ -7,12 +7,12 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-harmony_modding = { path = "../../crates/modding" }
+api = { package = "bevy_harmonize_api", path = "../../crates/bevy_harmonize/api" }
 
 bitcode = { version = "0", features = ["derive"] }
 
 [features]
 # these features are used for building mods
 # DO NOT REMOVE!!
-wasm_runtime = ["harmony_modding/wasm_runtime"]
-generate_manifest = ["harmony_modding/generate_manifest"]
+wasm_runtime = ["api/wasm_runtime"]
+generate_manifest = ["api/generate_manifest"]
