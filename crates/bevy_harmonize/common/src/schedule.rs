@@ -9,7 +9,7 @@ pub struct ScheduleDescriptor<'a> {
 /// Describes how to create a schedule
 #[derive(Encode, Decode, PartialEq, Debug, Default)]
 pub struct Schedule<'a> {
-    pub systems: Vec<System>,
+    pub systems: Vec<System<'a>>,
     pub constraints: Vec<Constraint<'a>>,
 }
 
@@ -36,9 +36,9 @@ pub enum Constraint<'a> {
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]
-pub struct System {
+pub struct System<'a> {
     pub id: SystemId,
-    pub params: Vec<ParamDescriptor>,
+    pub params: Vec<Param<'a>>,
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

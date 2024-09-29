@@ -17,7 +17,7 @@ impl SystemParam for Commands {
     }
 
     fn get_descriptors() -> ParamDescriptors {
-        vec![common::ParamDescriptor::Command]
+        vec![common::Param::Command]
     }
 }
 

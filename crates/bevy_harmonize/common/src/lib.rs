@@ -66,7 +66,8 @@ pub trait HasStableId {
     const VERSION: &'static str;
     const NAME: &'static str;
 
-    fn get_stable_id(&self) -> StableId<'static> {
+    #[inline]
+    fn get_stable_id() -> StableId<'static> {
         StableId {
             crate_name: Self::CRATE_NAME,
             version: Self::VERSION,
@@ -74,8 +75,9 @@ pub trait HasStableId {
         }
     }
 
-    fn get_owned_stable_id(&self) -> OwnedStableId {
-        self.get_stable_id().to_owned()
+    #[inline]
+    fn get_owned_stable_id() -> OwnedStableId {
+        Self::get_stable_id().to_owned()
     }
 }
 
@@ -106,9 +108,25 @@ impl fmt::Debug for SystemId {
 }
 
 #[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash)]
-pub enum ParamDescriptor {
+pub enum Param<'a> {
     Command,
-    // TODO: Query, Res, ResMut, etc
+    Res(StableId<'a>),
+    // TODO: Query, Res, etc
+}
+
+impl Param<'_> {
+    pub fn to_owned(&self) -> OwnedParam {
+        match self {
+            Param::Command => OwnedParam::Command,
+            Param::Res(stable_id) => OwnedParam::Res(stable_id.to_owned()),
+        }
+    }
+}
+
+#[derive(PartialEq, Eq, Debug, Clone, Hash)]
+pub enum OwnedParam {
+    Command,
+    Res(OwnedStableId),
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

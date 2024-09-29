@@ -47,7 +47,7 @@ impl FeatureBuilder {
 
     pub fn insert_resource<R: Resource>(&mut self, resource: R) -> &mut Self {
         self.resources
-            .push((resource.get_stable_id(), bitcode::encode(&resource)));
+            .push((R::get_stable_id(), bitcode::encode(&resource)));
         self
     }
 
@@ -61,7 +61,7 @@ impl FeatureBuilder {
 
         #[cfg(feature = "generate_manifest")]
         {
-            let id = _schedule.get_stable_id();
+            let id = S::get_stable_id();
             let descriptor = crate::utils::find_mut_or_push(
                 &mut self.schedules,
                 |s| s.id == id,

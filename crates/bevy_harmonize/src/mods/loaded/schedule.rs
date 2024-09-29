@@ -21,8 +21,8 @@ impl LoadedSchedules {
         let mut schedules = HashMap::default();
 
         // Allow only the default schedules for now
-        schedules.insert(Start.get_owned_stable_id(), Vec::new());
-        schedules.insert(Update.get_owned_stable_id(), Vec::new());
+        schedules.insert(Start::get_owned_stable_id(), Vec::new());
+        schedules.insert(Update::get_owned_stable_id(), Vec::new());
 
         // Group together schedules with the same schedule id
         for descriptor in descriptors {
@@ -61,7 +61,7 @@ struct LoadedSystem {
     /// Whether or not this system depends on any other system
     /// In the case this is false, the scheduler can run this system first
     is_dependent: bool,
-    params: Vec<common::ParamDescriptor>,
+    params: Vec<common::OwnedParam>,
 }
 
 impl LoadedSchedule {
@@ -84,7 +84,7 @@ impl LoadedSchedule {
                     is_dependent: false,
                     params: Vec::new(),
                 });
-                system.params = params.clone();
+                system.params = params.iter().map(|param| param.to_owned()).collect();
             }
         }
 

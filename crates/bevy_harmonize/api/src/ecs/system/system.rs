@@ -17,7 +17,7 @@ pub trait System: Send + Sync + 'static {
     fn param_descriptors(&self) -> ParamDescriptors;
 }
 
-pub type ParamDescriptors = Vec<common::ParamDescriptor>;
+pub type ParamDescriptors = Vec<common::Param<'static>>;
 
 /// A convenience type alias for a boxed [`System`] trait object.
 pub type BoxedSystem<In = (), Out = ()> = Box<dyn System<In = In, Out = Out>>;
