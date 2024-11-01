@@ -1,5 +1,5 @@
 [package]
-name = "harmony_browser"
+name = "harmony_client"
 version = "0.0.0"
 edition = "2021"
 
@@ -10,5 +10,5 @@ bevy = { version = "0.14", default-features = false, features = [
     "multi_threaded",
 ] }
 
-bevy_harmonize = { path = "../crates/bevy_harmonize" }
-bevy_harmonize_build = { path = "../crates/bevy_harmonize/build" }
+bevy_harmonize = { path = "../bevy_harmonize" }
+bevy_harmonize_build = { path = "../bevy_harmonize/build" }

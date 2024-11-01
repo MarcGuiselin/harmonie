@@ -1,7 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "browser",
     "crates/*",
     "crates/bevy_harmonize/api",
     "crates/bevy_harmonize/build",

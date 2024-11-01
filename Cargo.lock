@@ -2063,7 +2063,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "harmony_browser"
+name = "harmony_client"
 version = "0.0.0"
 dependencies = [
  "bevy",
