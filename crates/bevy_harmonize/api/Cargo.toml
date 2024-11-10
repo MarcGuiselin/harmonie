@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 common = { package = "bevy_harmonize_common", path = "../common" }
 
-bitcode = { version = "0", features = ["derive"] }
-bevy_utils_proc_macros = "0.14"
+bitcode.workspace = true
+bevy_utils_proc_macros.workspace = true
 
 [features]
 generate_manifest = []

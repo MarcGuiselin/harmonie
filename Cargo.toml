@@ -8,6 +8,27 @@ members = [
     "mods/*",
 ]
 
+[workspace.dependencies]
+bitcode = { version = "0", features = ["derive"] }
+async-channel = "2.3"
+async-process = "2.2"
+async-std = "1.12"
+async-fs = "2.1"
+bevy = { version = "0.14", default-features = false }
+bevy_app = "0.14"
+bevy_ecs = "0.14"
+bevy_ecs_macros = "0.14"
+bevy_tasks = "0.14"
+bevy_utils = "0.14"
+bevy_utils_proc_macros = "0.14"                    #"0.15.0-rc.3"
+bitcode = { version = "0", features = ["derive"] }
+futures-concurrency = "7.6"
+futures-lite = "2.3"
+notify = "6"
+petgraph = "0.6"
+sha2 = "0.10"
+wasmer = "4.3"
+
 # Enable small optimizations for local code
 [profile.dev]
 opt-level = 1

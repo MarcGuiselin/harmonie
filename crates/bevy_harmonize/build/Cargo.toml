@@ -7,12 +7,12 @@ edition = "2021"
 [dependencies]
 common = { package = "bevy_harmonize_common", path = "../common" }
 
-async-fs = "2.1"
-async-process = "2.2"
-async-std = "1.12"
-bevy_utils = "0.14"
-bitcode = { version = "0", features = ["derive"] }
-futures-concurrency = "7.6"
-futures-lite = "2.3"
-sha2 = "0.10"
-wasmer = "4.3"
+async-fs.workspace = true
+async-process.workspace = true
+async-std.workspace = true
+bevy_utils.workspace = true
+bitcode.workspace = true
+futures-concurrency.workspace = true
+futures-lite.workspace = true
+sha2.workspace = true
+wasmer.workspace = true

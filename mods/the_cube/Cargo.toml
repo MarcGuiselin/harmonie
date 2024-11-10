@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 [dependencies]
 api = { package = "bevy_harmonize_api", path = "../../crates/bevy_harmonize/api" }
 
-bitcode = { version = "0", features = ["derive"] }
+bitcode.workspace = true
 
 [features]
 # these features are used for building mods
