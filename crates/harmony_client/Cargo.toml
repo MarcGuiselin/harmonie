@@ -11,4 +11,3 @@ bevy = { workspace = true, default-features = false, features = [
 ] }
 
 bevy_harmonize = { path = "../bevy_harmonize" }
-bevy_harmonize_build = { path = "../bevy_harmonize/build" }

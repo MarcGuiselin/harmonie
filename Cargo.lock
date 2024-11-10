@@ -2235,7 +2235,6 @@ version = "0.0.0"
 dependencies = [
  "bevy",
  "bevy_harmonize",
- "bevy_harmonize_build",
 ]
 
 [[package]]
