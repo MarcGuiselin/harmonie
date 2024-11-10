@@ -5,7 +5,6 @@ members = [
     "crates/bevy_harmonize/api",
     "crates/bevy_harmonize/build",
     "crates/bevy_harmonize/common",
-    "mods/*",
 ]
 
 [workspace.dependencies]
@@ -21,6 +20,7 @@ bevy_ecs_macros = "0.15.0-rc.3"
 bevy_tasks = "0.15.0-rc.3"
 bevy_utils = "0.15.0-rc.3"
 bevy_utils_proc_macros = "0.15.0-rc.3"
+clap = "4.5"
 futures-concurrency = "7.6"
 futures-lite = "2.5"
 notify = "7"

@@ -3926,23 +3926,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "the_cube"
-version = "0.0.0"
-dependencies = [
- "bevy_harmonize_api",
- "bitcode",
-]
-
-[[package]]
-name = "the_cube_mover"
-version = "0.0.0"
-dependencies = [
- "bevy_harmonize_api",
- "bitcode",
- "the_cube",
-]
-
-[[package]]
 name = "thiserror"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
