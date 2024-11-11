@@ -6,8 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { workspace = true, default-features = false, features = [
-    "multi_threaded",
-] }
+bevy.workspace = true
 
 bevy_harmonize = { path = "../bevy_harmonize" }
