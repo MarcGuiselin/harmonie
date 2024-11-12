@@ -6,6 +6,7 @@ edition = "2021"
 
 [dependencies]
 common = { package = "bevy_harmonize_common", path = "common" }
+bevy_harmonize_build = { path = "../bevy_harmonize/build" }
 
 async-channel.workspace = true
 async-fs.workspace = true
@@ -18,5 +19,6 @@ bitcode.workspace = true
 futures-lite.workspace = true
 notify.workspace = true
 petgraph.workspace = true
+rancor.workspace = true
 sha2.workspace = true
 wasmer.workspace = true

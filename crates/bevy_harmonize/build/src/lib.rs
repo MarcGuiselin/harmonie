@@ -4,55 +4,89 @@ use async_std::{
     stream::StreamExt,
     task::spawn,
 };
-use bevy_utils::tracing::{error, info};
+use bevy_utils::tracing::{error, info, warn};
 use futures_concurrency::prelude::*;
+use rancor::{fail, ResultExt};
 use sha2::{Digest, Sha256};
-use std::path::PathBuf;
-use std::{io::Result, time::Instant};
+use std::{error::Error, path::PathBuf, time::Instant};
 
 mod command;
 use command::CargoCommand;
 
 mod fs_utils;
 
-pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> Result<()> {
-    let start = Instant::now();
-    info!("Building mods {:?}", packages);
+const TARGET_DIR: &str = "target";
+const BUILD_DIR: &str = "harmony-build";
+const TEMP_DIR: &str = "temp";
+const CODEGEN_DIR: &str = "codegen";
+const WASM_TARGET: &str = "wasm32-unknown-unknown";
 
-    // Clear/prep harmony-build directory
-    let temp_dir = directory.join("target/harmony-build/temp");
-    let target_dir: PathBuf = directory.join(if release {
-        "target/harmony-build/release"
-    } else {
-        "target/harmony-build/debug"
-    });
-    let _ = fs_utils::remove_dir_contents(&temp_dir).await;
-    let _ = fs_utils::remove_dir_contents(&target_dir).await;
-    async_fs::create_dir_all(&temp_dir).await?;
-    async_fs::create_dir_all(&target_dir).await?;
+pub async fn build<E>(
+    release: bool,
+    mods_directory: PathBuf,
+    cargo_directory: PathBuf,
+) -> Result<Vec<PathBuf>, E>
+where
+    E: rancor::Source,
+{
+    let start = Instant::now();
+    info!("Building mods from {:?}", mods_directory);
+
+    let sources = ModSource::from_dir(&mods_directory).await?;
+    if sources.is_empty() {
+        warn!("There are no mods to build");
+        return Ok(Vec::new());
+    }
+
+    let target_dir = cargo_directory.join(TARGET_DIR);
+    let build_dir = target_dir.join(BUILD_DIR);
+    let dev_mode = if release { "release" } else { "debug" };
+    let codegen_dir = build_dir.join(CODEGEN_DIR);
+
+    // Prepare codegen
+    let codegen_crates_dir = codegen_dir.join("crates");
+    fs_utils::create_dir_all_empty(&codegen_crates_dir).await?;
+    let contents = format!(
+        "{}",
+        &CargoWorkspace {
+            modloader_version: env!("CARGO_PKG_VERSION"),
+            dev_mode,
+        }
+    );
+    fs_utils::write(codegen_dir.join("Cargo.toml"), contents.as_bytes()).await?;
+    for source in sources.iter() {
+        source.codegen(&codegen_crates_dir, &dev_mode).await?;
+    }
 
     // Build a debug release of mods for manifest generation
+    let packages: Vec<String> = sources
+        .iter()
+        .map(|result| result.get_package_name())
+        .collect();
     build_raw(
-        directory.clone(),
+        codegen_dir.clone(),
         packages.clone(),
         BuildType::GenerateManifest,
     )
     .await?;
 
     // Move generated wasm files to a temporary directory
-    let build_dir = directory.join("target/wasm32-unknown-unknown/debug");
+    let temp_dir = build_dir.join(TEMP_DIR);
+    fs_utils::create_dir_all_empty(&temp_dir).await?;
+    let codegen_target_dir = codegen_dir.join(TARGET_DIR).join(WASM_TARGET);
+    let codegen_build_dir = codegen_target_dir.join("debug");
     for package in packages.iter() {
         let filename = format!("{}.wasm", package);
-        let src = build_dir.join(&filename);
+        let src = codegen_build_dir.join(&filename);
         let dst = temp_dir.join(&filename);
-        async_fs::rename(src, dst).await?;
+        fs_utils::rename(src, dst).await?;
     }
 
     // 1. Generate the manifest for each mod
     let generate_manifests_fut = generate_manifests(temp_dir.clone(), packages.clone());
 
     // 2. Generate the wasm files for each mod
-    let generate_wasm_fut = generate_wasm(release, directory.clone(), packages.clone());
+    let generate_wasm_fut = generate_wasm(release, codegen_dir.clone(), packages.clone());
 
     // Do 1 and 2 concurrently
     let (result1, result2) = (generate_manifests_fut, generate_wasm_fut).join().await;
@@ -60,6 +94,8 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
     result2?;
 
     // Do final processing of manifest and write files to target directory
+    let codegen_build_dir = codegen_target_dir.join(dev_mode);
+    let dest_dir = build_dir.join(dev_mode);
     packages
         .clone()
         .into_iter()
@@ -67,56 +103,149 @@ pub async fn build(release: bool, directory: PathBuf, packages: Vec<String>) -> 
         .collect::<Vec<_>>()
         .into_co_stream()
         .map(|(package, encoded_manifest)| {
-            let build_dir = directory.join(if release {
-                "target/wasm32-unknown-unknown/release"
-            } else {
-                "target/wasm32-unknown-unknown/debug"
-            });
-            final_processing(package, encoded_manifest, build_dir, target_dir.clone())
+            final_processing(
+                package,
+                encoded_manifest,
+                codegen_build_dir.clone(),
+                dest_dir.clone(),
+            )
         })
-        .collect::<Vec<Result<()>>>()
+        .collect::<Vec<Result<(), _>>>()
         .await
         .into_iter()
-        .collect::<Result<Vec<()>>>()?;
+        .collect::<Result<Vec<()>, _>>()?;
 
     let duration = start.elapsed();
     info!("Successfully built mods {:?} in {:?}", packages, duration);
 
-    Ok(())
+    let result = sources
+        .iter()
+        .map(|source| {
+            let package_name = source.get_package_name();
+            let wasm_file = dest_dir.join(format!("{}.wasm", package_name));
+            wasm_file
+        })
+        .collect();
+    Ok(result)
 }
 
-async fn generate_manifests(temp_dir: PathBuf, packages: Vec<String>) -> Result<Vec<Vec<u8>>> {
+/// A source file for a mod
+#[derive(Clone, Debug)]
+pub struct ModSource(PathBuf);
+
+impl ModSource {
+    async fn from_dir<E>(path: &PathBuf) -> Result<Vec<Self>, E>
+    where
+        E: rancor::Source,
+    {
+        let files = fs_utils::list_files_in_dir(path).await?;
+        let mut sources = Vec::new();
+        for file in files {
+            if file.extension().map_or(false, |ext| ext == "rs") {
+                let path = dunce::realpath(file).into_error()?;
+                sources.push(Self(path));
+            }
+        }
+        Ok(sources)
+    }
+
+    async fn codegen<E>(&self, path: &PathBuf, dev_mode: &str) -> Result<(), E>
+    where
+        E: rancor::Source,
+    {
+        let file_name = self.0.file_name().unwrap().to_str().unwrap();
+        let package_name = self.get_package_name();
+        let source_file = self.0.to_str().unwrap().replace("\\", "/");
+        let contents = format!(
+            "{}",
+            &CargoMod {
+                file_name,
+                modloader_version: env!("CARGO_PKG_VERSION"),
+                dev_mode,
+                package_name: &package_name,
+                source_file: &source_file,
+            }
+        );
+
+        let crate_dir = path.join(&package_name);
+        fs_utils::create_dir_all(&crate_dir).await?;
+        fs_utils::write(crate_dir.join("Cargo.toml"), contents).await?;
+
+        Ok(())
+    }
+
+    fn get_package_name(&self) -> String {
+        let path_hash: [u8; 32] = Sha256::digest(self.0.as_os_str().as_encoded_bytes()).into();
+        let package_suffix: String = path_hash[..4]
+            .iter()
+            .map(|byte| format!("{:02x}", byte))
+            .collect();
+
+        let name = self.0.file_stem().unwrap().to_str().unwrap();
+        format!(
+            "{}-{}",
+            name.to_lowercase().replace(" ", "_"),
+            &package_suffix
+        )
+    }
+}
+
+#[derive(bart_derive::BartDisplay)]
+#[template = "templates/Cargo.toml"]
+struct CargoWorkspace<'a> {
+    modloader_version: &'a str,
+    dev_mode: &'a str,
+}
+
+#[derive(bart_derive::BartDisplay)]
+#[template = "templates/mod/Cargo.toml"]
+struct CargoMod<'a> {
+    file_name: &'a str,
+    modloader_version: &'a str,
+    dev_mode: &'a str,
+    package_name: &'a str,
+    source_file: &'a str,
+}
+
+async fn generate_manifests<E>(temp_dir: PathBuf, packages: Vec<String>) -> Result<Vec<Vec<u8>>, E>
+where
+    E: rancor::Source,
+{
     packages
         .into_co_stream()
         .map(|package| {
             let path = temp_dir.join(format!("{}.wasm", package));
             wasm_export_encoded_manifest(path)
         })
-        .collect::<Vec<Result<Vec<u8>>>>()
+        .collect::<Vec<Result<Vec<u8>, _>>>()
         .await
         .into_iter()
         .collect()
 }
 
-async fn generate_wasm(release: bool, directory: PathBuf, packages: Vec<String>) -> Result<()> {
+async fn generate_wasm<E>(release: bool, directory: PathBuf, packages: Vec<String>) -> Result<(), E>
+where
+    E: rancor::Source,
+{
     let build_type = if release {
         BuildType::Release
     } else {
         BuildType::Debug
     };
-    build_raw(directory.clone(), packages.clone(), build_type).await?;
-
-    Ok(())
+    build_raw(directory.clone(), packages.clone(), build_type).await
 }
 
-async fn final_processing(
+async fn final_processing<E>(
     package: String,
     encoded_manifest: Vec<u8>,
-    build_dir: PathBuf,
-    target_dir: PathBuf,
-) -> Result<()> {
-    let wasm_path = build_dir.join(format!("{}.wasm", package));
-    let wasm_bytes = async_fs::read(&wasm_path).await?;
+    codegen_build_dir: PathBuf,
+    dest_dir: PathBuf,
+) -> Result<(), E>
+where
+    E: rancor::Source,
+{
+    let wasm_path = codegen_build_dir.join(format!("{}.wasm", package));
+    let wasm_bytes = fs_utils::read(&wasm_path).await?;
     let wasm_hash = common::FileHash::from_sha256(Sha256::digest(&wasm_bytes).into());
 
     let old_manifest: common::ModManifest<'_> = bitcode::decode(&encoded_manifest).unwrap();
@@ -126,17 +255,17 @@ async fn final_processing(
     };
 
     let as_string = format!("{:#?}", manifest);
-    let path = target_dir.join(format!("{}.manifest.txt", package));
-    async_fs::write(&path, as_string).await?;
+    let path = dest_dir.join(format!("{}.manifest.txt", package));
+    fs_utils::write(&path, as_string).await?;
 
     let encoded_manifest = bitcode::encode(&manifest);
-    let path = target_dir.join(format!("{}.manifest", package));
-    async_fs::write(&path, encoded_manifest).await?;
+    let path = dest_dir.join(format!("{}.manifest", package));
+    fs_utils::write(&path, encoded_manifest).await?;
 
     // Move wasm file to target directory
     let src = wasm_path;
-    let dst = target_dir.join(format!("{}.wasm", package));
-    async_fs::rename(src, dst).await?;
+    let dst = dest_dir.join(format!("{}.wasm", package));
+    fs_utils::rename(src, dst).await?;
 
     Ok(())
 }
@@ -148,7 +277,14 @@ enum BuildType {
     GenerateManifest,
 }
 
-async fn build_raw(directory: PathBuf, packages: Vec<String>, build_type: BuildType) -> Result<()> {
+async fn build_raw<E>(
+    directory: PathBuf,
+    packages: Vec<String>,
+    build_type: BuildType,
+) -> Result<(), E>
+where
+    E: rancor::Source,
+{
     let mut command = CargoCommand::new("build");
     command
         .packages(packages.into_iter())
@@ -171,22 +307,38 @@ async fn build_raw(directory: PathBuf, packages: Vec<String>, build_type: BuildT
         command.inner.arg("--release");
     }
 
-    let mut child = command.inner.spawn()?;
+    let mut child = command
+        .inner
+        .spawn()
+        .into_with_trace(|| format!("Could not start cargo"))?;
 
     // All human readable output for cargo is sent to stderr
     let stderr = child.stderr.take().unwrap();
     let stderr_handle = spawn(output_cargo_stderr(stderr));
 
     let (status, _) = (child.status(), stderr_handle).join().await;
-    if status?.success() {
-        Ok(())
-    } else {
-        Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Failed to build mods",
-        ))
+    let status = status.into_error()?;
+    if !status.success() {
+        fail!(UnsuccessfulExitStatus {
+            status: status.code()
+        });
+    }
+
+    Ok(())
+}
+
+#[derive(Debug)]
+struct UnsuccessfulExitStatus {
+    status: Option<i32>,
+}
+
+impl std::fmt::Display for UnsuccessfulExitStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Exit status: {:?}", self.status)
     }
 }
+
+impl Error for UnsuccessfulExitStatus {}
 
 async fn output_cargo_stderr(output: impl Read + Unpin) {
     let reader = BufReader::new(output);
@@ -230,8 +382,11 @@ fn submit_manifest(mut context: Context, manifest_ptr: u64) {
     data.encoded_manifest = Some(encoded);
 }
 
-async fn wasm_export_encoded_manifest(path: PathBuf) -> Result<Vec<u8>> {
-    let bytes = async_fs::read(&path).await?;
+async fn wasm_export_encoded_manifest<E>(path: PathBuf) -> Result<Vec<u8>, E>
+where
+    E: rancor::Source,
+{
+    let bytes = fs_utils::read(&path).await?;
 
     // Create a Store.
     let mut store = wasmer::Store::default();

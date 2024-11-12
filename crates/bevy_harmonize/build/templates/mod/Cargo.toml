@@ -1,0 +1,21 @@
+# This file is auto-generated to compile mod {{file_name}}
+#
+# Modloader Version: {{modloader_version}}
+# Dev Mode: {{dev_mode}}
+# Build mode: Local
+
+[package]
+name = "{{package_name}}"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+path = "{{source_file}}"
+
+[dependencies]
+# api = { package = "bevy_harmonize_api", path = "../api" }
+
+[features]
+# wasm_runtime = ["api/wasm_runtime"]
+# generate_manifest = ["api/generate_manifest"]

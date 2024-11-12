@@ -1,19 +1,18 @@
-use std::{
-    io::Result,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use async_channel::Receiver;
 use bevy_app::{App, Plugin, PostUpdate, PreStartup};
 use bevy_ecs::system::ResMut;
 use bevy_ecs_macros::Resource;
+use bevy_harmonize_build::build;
 use bevy_tasks::{block_on, poll_once, AsyncComputeTaskPool, Task};
 use bevy_utils::tracing::*;
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 
 use crate::mods::Mods;
 
-const PATH: &str = "C:/Users/Marc/Documents/Projects/Harmony/harmony/mods";
+const MOD_DIR: &str = "./mods";
+const CARGO_DIR: &str = ".";
 
 pub(crate) struct DevtoolsPlugin;
 
@@ -27,7 +26,7 @@ impl Plugin for DevtoolsPlugin {
 
 #[derive(Resource)]
 struct BuildTask {
-    compute: Option<Task<Result<BuildResult>>>,
+    compute: Option<Task<Result<Vec<PathBuf>, rancor::Error>>>,
 
     /// Indicates that there were one or more file changes
     trigger_build: Receiver<()>,
@@ -50,7 +49,7 @@ impl Default for BuildTask {
         )
         .expect("Failed to create filesystem watcher.");
 
-        let path = Path::new(PATH);
+        let path = Path::new(MOD_DIR);
         watcher
             .watch(path, RecursiveMode::Recursive)
             .expect("Failed to watch path");
@@ -63,17 +62,13 @@ impl Default for BuildTask {
     }
 }
 
-struct BuildResult {
-    paths: Vec<PathBuf>,
-}
-
 fn update_build(mut task: ResMut<BuildTask>, mut mods: ResMut<Mods>) {
     // Check on the active build task
     if let Some(compute) = &mut task.compute {
         match block_on(poll_once(compute)) {
-            Some(Ok(BuildResult { paths })) => {
-                for path in paths {
-                    mods.load_from_path(path);
+            Some(Ok(files)) => {
+                for file in files {
+                    mods.load_from_path(&file);
                 }
             }
             Some(Err(err)) => error!("Error when building mods {}", err),
@@ -84,13 +79,12 @@ fn update_build(mut task: ResMut<BuildTask>, mut mods: ResMut<Mods>) {
 
     // Initialize a new task when the previous one is finished
     if task.trigger_build.try_recv().is_ok() && task.compute.is_none() {
+        let debug = cfg!(debug_assertions);
+        let mods_directory = Path::new(MOD_DIR).to_path_buf();
+        let cargo_directory = Path::new(CARGO_DIR).to_path_buf();
+
+        let future = build::<rancor::Error>(!debug, mods_directory, cargo_directory);
         task.compute
-            .replace(AsyncComputeTaskPool::get().spawn(build_all()));
+            .replace(AsyncComputeTaskPool::get().spawn(future));
     }
-}
-
-async fn build_all() -> Result<BuildResult> {
-    warn!("Rebuilding!");
-
-    Ok(BuildResult { paths: Vec::new() })
 }
