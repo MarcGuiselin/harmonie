@@ -1,4 +1,6 @@
 #![allow(dead_code)] // TODO: remove
+#![feature(const_trait_impl)]
+#![feature(const_type_name)]
 
 #[cfg(all(feature = "generate_manifest", feature = "wasm_runtime"))]
 compile_error!(

@@ -14,6 +14,7 @@ pub use system_param::SystemParam;
     message = "`{Self}` is not a valid system with input `{In}` and output `{Out}`",
     label = "invalid system"
 )]
+#[const_trait]
 pub trait IntoSystem<In, Out, Marker>: Sized {
     /// The type of [`System`] that this instance converts into.
     type System: System<In = In, Out = Out>;
@@ -23,7 +24,7 @@ pub trait IntoSystem<In, Out, Marker>: Sized {
 }
 
 // All systems implicitly implement IntoSystem.
-impl<T: System> IntoSystem<T::In, T::Out, ()> for T {
+impl<T: System> const IntoSystem<T::In, T::Out, ()> for T {
     type System = T;
     fn into_system(this: Self) -> Self {
         this
