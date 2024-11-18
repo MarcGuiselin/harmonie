@@ -40,6 +40,7 @@ pub fn __internal_initialize_runtime(_: Harmony) {
 /// - system index is not already running
 pub unsafe fn __internal_run_system(index: usize) {
     // SAFETY: This is a single-threaded environment
+    #[allow(static_mut_refs)]
     let runtime = RUNTIME.as_mut().expect("Runtime not initialized");
     let system = &mut runtime.systems[index];
     system.run(());
