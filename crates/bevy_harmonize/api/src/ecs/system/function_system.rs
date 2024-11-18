@@ -1,6 +1,4 @@
-use super::{
-    system::ParamDescriptors, system_param::SystemParamItem, In, IntoSystem, System, SystemParam,
-};
+use super::{system_param::SystemParamItem, In, IntoSystem, ParamDescriptors, System, SystemParam};
 use bevy_utils_proc_macros::all_tuples;
 use std::marker::PhantomData;
 
@@ -84,16 +82,17 @@ macro_rules! impl_system_function {
 
 // Note that we rely on the highest impl to be <= the highest order of the tuple impls
 // of `SystemParam` created.
-all_tuples!(impl_system_function, 0, 16, F);
+all_tuples!(impl_system_function, 0, 0, F);
 
 /// A marker type used to distinguish regular function systems from exclusive function systems.
 #[doc(hidden)]
 pub struct IsFunctionSystem;
 
-impl<Marker, F> IntoSystem<F::In, F::Out, (IsFunctionSystem, Marker)> for F
+impl<Marker, F> const IntoSystem<F::In, F::Out, (IsFunctionSystem, Marker)> for F
 where
     Marker: 'static,
     F: SystemParamFunction<Marker>,
+    <F as SystemParamFunction<Marker>>::Param: ~const SystemParam,
 {
     type System = FunctionSystem<Marker, F>;
     fn into_system(func: Self) -> Self::System {
@@ -138,7 +137,11 @@ where
     message = "`{Self}` is not a valid system",
     label = "invalid system"
 )]
-pub trait SystemParamFunction<Marker>: Send + Sync + 'static {
+#[const_trait]
+pub trait SystemParamFunction<Marker>
+where
+    Self: Send + Sync + 'static,
+{
     /// The input type to this system. See [`System::In`].
     type In;
 

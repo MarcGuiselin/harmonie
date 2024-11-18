@@ -1,3 +1,5 @@
+#![feature(const_type_name)]
+
 use bitcode::{Decode, Encode};
 use std::{
     any::TypeId,
@@ -107,7 +109,7 @@ impl fmt::Debug for SystemId {
     }
 }
 
-#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash)]
+#[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash, Copy)]
 pub enum Param<'a> {
     Command,
     Res(StableId<'a>),

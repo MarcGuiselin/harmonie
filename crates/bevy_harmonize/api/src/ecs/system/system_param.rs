@@ -1,6 +1,8 @@
 use super::system::ParamDescriptors;
+use crate::ecs::ConstVec;
 use bevy_utils_proc_macros::all_tuples;
 
+#[const_trait]
 pub trait SystemParam: Sized {
     /// Used to store data which persists across invocations of a system.
     type State: Send + Sync + 'static;
@@ -27,7 +29,7 @@ pub type SystemParamItem<'s, P> = <P as SystemParam>::Item<'s>;
 macro_rules! impl_system_param_tuple {
     ($($param: ident),*) => {
         #[allow(non_snake_case)]
-        impl<$($param: SystemParam),*> SystemParam for ($($param,)*) {
+        impl<$($param: ~const SystemParam),*> const SystemParam for ($($param,)*) {
             type State = ($($param::State,)*);
             type Item<'s> = ($($param::Item::<'s>,)*);
 
@@ -47,8 +49,12 @@ macro_rules! impl_system_param_tuple {
 
             #[inline]
             fn get_descriptors() -> ParamDescriptors {
-                let vec: Vec<ParamDescriptors> = vec![$($param::get_descriptors(),)*];
-                vec.into_iter().flatten().collect()
+                #[allow(unused_mut)]
+                let mut vec = ConstVec::new();
+                $(
+                    vec = vec.append($param::get_descriptors());
+                )*
+                vec
             }
         }
     };
