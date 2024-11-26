@@ -41,13 +41,20 @@ impl Default for BuildTask {
         // Rebuild at least once on startup
         sender.try_send(()).unwrap();
 
-        let mut watcher = RecommendedWatcher::new(
-            move |_| {
-                let _ = sender.try_send(());
+        let event_handler = move |event: Result<notify::Event, notify::Error>| match event {
+            Ok(event) => match event.kind {
+                notify::EventKind::Create(..)
+                | notify::EventKind::Modify(..)
+                | notify::EventKind::Remove(..) => {
+                    let _ = sender.try_send(());
+                }
+                _ => {}
             },
-            Default::default(),
-        )
-        .expect("Failed to create filesystem watcher.");
+            Err(err) => error!("Mod build file watcher error: {:?}", err),
+        };
+        let config = Default::default();
+        let mut watcher = RecommendedWatcher::new(event_handler, config)
+            .expect("Failed to create filesystem watcher.");
 
         let path = Path::new(MOD_DIR);
         watcher
