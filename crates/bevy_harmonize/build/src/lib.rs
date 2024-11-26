@@ -1,3 +1,5 @@
+#![allow(non_local_definitions)] // TODO: Fix downstream in bart
+
 use async_process::Stdio;
 use async_std::{
     io::{prelude::BufReadExt, BufReader, Read},
