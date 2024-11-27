@@ -897,7 +897,6 @@ name = "bevy_harmonize_common"
 version = "0.0.0"
 dependencies = [
  "bitcode",
- "const_panic",
 ]
 
 [[package]]
