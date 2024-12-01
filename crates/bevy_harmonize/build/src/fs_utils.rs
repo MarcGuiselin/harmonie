@@ -1,4 +1,5 @@
-use async_fs;
+use async_fs::{self, DirEntry, ReadDir};
+use bevy_utils::{info, tracing::info};
 use futures_lite::stream::StreamExt;
 use rancor::ResultExt;
 use std::path::{Path, PathBuf};
@@ -140,4 +141,57 @@ where
     }
 
     Ok(files)
+}
+
+async fn aaa<E>(entries:&mut  ReadDir) -> Result<Option<DirEntry>, E> where 
+E: rancor::Source {
+    let a = entries.try_next();
+    info!("Stuck");
+    let a = a.await;
+    info!("Not stuck");
+    let a = a.into_error();
+    a
+}
+
+pub async fn copy_dir<P, Q, E>(from: P, to: Q) -> Result<(), E>
+where
+    P: AsRef<Path>,
+    Q: AsRef<Path>,
+    E: rancor::Source,
+{
+    let from = from.as_ref();
+    let to = to.as_ref();
+
+    create_dir_all_empty(to).await?;
+
+    let mut dirs = vec![from.to_path_buf()];
+
+    while let Some(dir) = dirs.pop() {
+        //info!("dir: {:?}, dirs: {:?}", &dir, &dirs);
+
+        let mut entries = read_dir(&dir).await?;
+
+        while let Some(entry) = aaa(&mut entries).await? {
+            //info!("aaaa");
+            let from_path = entry.path();
+            let to_path = to.join(from_path.strip_prefix(from).unwrap());
+            info!("{:?} -> {:?}", &from_path, &to_path);
+            if entry.file_type().await.into_error()?.is_dir() {
+                //info!("dddd");
+                async_fs::create_dir(&to_path).await.into_error()?;
+                dirs.push(from_path);
+            } else {
+                //info!("eeee");
+                async_fs::copy(&from_path, &to_path)
+                    .await
+                    .into_with_trace(|| {
+                        format!("Failed to copy file: {:?} -> {:?}", from_path, to_path)
+                    })?;
+            }
+            //info!("bbbb");
+        }
+        //info!("cccc");
+    }
+
+    Ok(())
 }

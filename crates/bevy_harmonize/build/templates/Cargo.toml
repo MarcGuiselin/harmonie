@@ -9,4 +9,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
-# TODO
+# IMPORTANT: These versions should match those in the root workspace
+bitcode = { version = "0", features = ["derive"] }
+bevy_utils_proc_macros = "0.15.0-rc.3"
+const_panic = "0.2"

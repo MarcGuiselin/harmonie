@@ -25,6 +25,7 @@ const WASM_TARGET: &str = "wasm32-unknown-unknown";
 
 pub async fn build<E>(
     release: bool,
+    namespace: &str,
     mods_directory: PathBuf,
     cargo_directory: PathBuf,
 ) -> Result<Vec<PathBuf>, E>
@@ -55,9 +56,26 @@ where
             dev_mode,
         }
     );
-    fs_utils::write(codegen_dir.join("Cargo.toml"), contents.as_bytes()).await?;
+
+    for i in 0..10000000 {
+        info!("i: {}", i);
+        fs_utils::write(codegen_dir.join("Cargo.toml"), contents.as_bytes()).await?;
+    }
     for source in sources.iter() {
-        source.codegen(&codegen_crates_dir, &dev_mode).await?;
+        source.codegen(&codegen_crates_dir, namespace, &dev_mode).await?;
+    }
+
+    // Mods require the api package
+    let source_crates_dir = cargo_directory.join("crates").join("bevy_harmonize");
+    warn!("111");
+    fs_utils::copy_dir(source_crates_dir.join("api"), codegen_crates_dir.join("api")).await?;
+    warn!("222");
+    fs_utils::copy_dir(source_crates_dir.join("common"), codegen_crates_dir.join("common")).await?;
+    warn!("333");
+
+    if sources.len() != 124 {
+        warn!("DONE EARLY");
+        return Ok(Vec::new());
     }
 
     // Build a debug release of mods for manifest generation
@@ -151,7 +169,7 @@ impl ModSource {
         Ok(sources)
     }
 
-    async fn codegen<E>(&self, path: &PathBuf, dev_mode: &str) -> Result<(), E>
+    async fn codegen<E>(&self, path: &PathBuf, namespace: &str, dev_mode: &str) -> Result<(), E>
     where
         E: rancor::Source,
     {
@@ -162,6 +180,7 @@ impl ModSource {
             "{}",
             &CargoMod {
                 file_name,
+                namespace,
                 modloader_version: env!("CARGO_PKG_VERSION"),
                 dev_mode,
                 package_name: &package_name,
@@ -203,6 +222,7 @@ struct CargoWorkspace<'a> {
 #[template = "templates/mod/Cargo.toml"]
 struct CargoMod<'a> {
     file_name: &'a str,
+    namespace: &'a str,
     modloader_version: &'a str,
     dev_mode: &'a str,
     package_name: &'a str,

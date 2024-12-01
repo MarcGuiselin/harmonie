@@ -90,7 +90,7 @@ fn update_build(mut task: ResMut<BuildTask>, mut mods: ResMut<Mods>) {
         let mods_directory = Path::new(MOD_DIR).to_path_buf();
         let cargo_directory = Path::new(CARGO_DIR).to_path_buf();
 
-        let future = build::<rancor::Error>(!debug, mods_directory, cargo_directory);
+        let future = build(!debug, "harmony_mod", mods_directory, cargo_directory);
         task.compute
             .replace(AsyncComputeTaskPool::get().spawn(future));
     }

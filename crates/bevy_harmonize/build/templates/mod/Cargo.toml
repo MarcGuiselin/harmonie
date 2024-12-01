@@ -14,8 +14,8 @@ crate-type = ["cdylib"]
 path = "{{source_file}}"
 
 [dependencies]
-# api = { package = "bevy_harmonize_api", path = "../api" }
+{{namespace}} = { package = "bevy_harmonize_api", path = "../api" }
 
 [features]
-# wasm_runtime = ["api/wasm_runtime"]
-# generate_manifest = ["api/generate_manifest"]
+wasm_runtime = ["{{namespace}}/wasm_runtime"]
+generate_manifest = ["{{namespace}}/generate_manifest"]
