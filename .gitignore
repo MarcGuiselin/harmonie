@@ -1,6 +1,5 @@
 /target
 .DS_Store
-.vscode
 
 # Devenv
 .devenv*
