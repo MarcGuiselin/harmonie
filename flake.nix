@@ -23,18 +23,33 @@
           };
           rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
           craneLib = (crane.mkLib pkgs).overrideToolchain (_: rustToolchain);
-          nativeBuildInputs = with pkgs; [ rustToolchain pkg-config ];
           buildInputs = with pkgs; [
-            # Add additional build inputs here
-          ] ++ lib.optionals pkgs.stdenv.isDarwin [
-            # Additional darwin specific inputs can be set here
+            # Dev tools
+            nixd
+            
+            # Build tools
+            pkg-config
+          ] ++ lib.optionals stdenv.isLinux [
+            alsa-lib
+            libxkbcommon
+            udev
+            vulkan-loader
+            wayland
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXi
+            xorg.libXrandr
+          ] ++ lib.optionals stdenv.isDarwin [
+            darwin.apple_sdk_11_0.frameworks.Cocoa
+            rustPlatform
           ];
         in
         with pkgs;
         {
           devShells.default = craneLib.devShell {
-            inherit nativeBuildInputs;
-            buildInputs = buildInputs ++ [ pkgs.nixd ];
+            inherit buildInputs;
+
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
           };
         }
       );
