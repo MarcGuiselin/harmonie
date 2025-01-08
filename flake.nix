@@ -11,9 +11,13 @@
         flake-utils.follows = "flake-utils";
       };
     };
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, crane }:
+  outputs = { self, nixpkgs, flake-utils, rust-overlay, crane, fenix }:
     flake-utils.lib.eachDefaultSystem
       (system:
         let
@@ -21,8 +25,13 @@
           pkgs = import nixpkgs {
             inherit system overlays;
           };
-          rustToolchain = pkgs.pkgsBuildHost.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-          craneLib = (crane.mkLib pkgs).overrideToolchain (_: rustToolchain);
+          craneLib = (crane.mkLib pkgs).overrideToolchain (fenix.packages.${system}.complete.withComponents [
+            "cargo"
+            "llvm-tools"
+            "rustc"
+            "rust-src"
+            "rustfmt"
+          ]);
           buildInputs = with pkgs; [
             # Dev tools
             nixd
@@ -44,7 +53,6 @@
             rustPlatform
           ];
         in
-        with pkgs;
         {
           devShells.default = craneLib.devShell {
             inherit buildInputs;
