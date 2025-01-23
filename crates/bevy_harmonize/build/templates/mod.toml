@@ -1,4 +1,4 @@
-# This file is auto-generated to compile mod {{file_name}}
+# This Cargo.toml file is auto-generated to compile mod {{file_name}}
 #
 # Modloader Version: {{modloader_version}}
 # Dev Mode: {{dev_mode}}

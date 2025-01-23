@@ -1,4 +1,4 @@
-# This file is auto-generated to compile the mods in a shared workspace
+# This Cargo.toml file is auto-generated to compile the mods in a shared workspace
 #
 # Modloader Version: {{modloader_version}}
 # Dev Mode: {{dev_mode}}

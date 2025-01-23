@@ -193,14 +193,14 @@ impl ModSource {
 }
 
 #[derive(bart_derive::BartDisplay)]
-#[template = "templates/Cargo.toml"]
+#[template = "templates/workspace.toml"]
 struct CargoWorkspace<'a> {
     modloader_version: &'a str,
     dev_mode: &'a str,
 }
 
 #[derive(bart_derive::BartDisplay)]
-#[template = "templates/mod/Cargo.toml"]
+#[template = "templates/mod.toml"]
 struct CargoMod<'a> {
     file_name: &'a str,
     modloader_version: &'a str,
