@@ -1,2 +1,2 @@
 #!/bin/sh
-cargo run -p harmony_client
+cargo run -p harmonie_client

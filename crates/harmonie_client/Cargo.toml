@@ -1,5 +1,5 @@
 [package]
-name = "harmony_client"
+name = "harmonie_client"
 version = "0.0.0"
 edition = "2021"
 

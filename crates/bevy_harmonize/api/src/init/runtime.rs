@@ -12,8 +12,8 @@ static mut RUNTIME: Option<Runtime> = None;
 /// Initializes the internal execution runtime
 #[doc(hidden)]
 #[cfg(feature = "wasm_runtime")]
-pub fn __internal_initialize_runtime(harmony: Harmony) {
-    let systems = harmony
+pub fn __internal_initialize_runtime(harmonie: Harmony) {
+    let systems = harmonie
         .features
         .into_iter()
         .flat_map(|f| f.boxed_systems)

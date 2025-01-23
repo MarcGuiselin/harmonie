@@ -18,7 +18,7 @@ use command::CargoCommand;
 mod fs_utils;
 
 const TARGET_DIR: &str = "target";
-const BUILD_DIR: &str = "harmony-build";
+const BUILD_DIR: &str = "harmonie-build";
 const TEMP_DIR: &str = "temp";
 const CODEGEN_DIR: &str = "codegen";
 const WASM_TARGET: &str = "wasm32-unknown-unknown";
@@ -408,7 +408,7 @@ where
     };
     let env = wasmer::FunctionEnv::new(&mut store, state);
     let import_object = wasmer::imports! {
-        "harmony_mod" => {
+        "harmonie_mod" => {
             "reserve_component_id" => wasmer::Function::new_typed_with_env(&mut store, &env, reserve_component_id),
             "submit_manifest" => wasmer::Function::new_typed_with_env(&mut store, &env, submit_manifest),
         },
@@ -426,11 +426,11 @@ where
 
     let init: wasmer::TypedFunction<(), ()> = instance
         .exports
-        .get_typed_function(&store, "harmony_mod_generate_manifest")
-        .expect("could not find harmony_mod_generate_manifest function");
+        .get_typed_function(&store, "harmonie_mod_generate_manifest")
+        .expect("could not find harmonie_mod_generate_manifest function");
 
     init.call(&mut store)
-        .expect("failed to call harmony_mod_generate_manifest");
+        .expect("failed to call harmonie_mod_generate_manifest");
 
     let encoded = env
         .as_mut(&mut store)

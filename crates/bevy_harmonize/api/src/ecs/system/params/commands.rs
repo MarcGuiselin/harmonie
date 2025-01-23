@@ -25,7 +25,7 @@ impl const SystemParam for Commands {
 impl Commands {
     #[cfg(feature = "wasm_runtime")]
     pub fn spawn_empty(&mut self) -> EntityCommands {
-        #[link(wasm_import_module = "harmony_mod")]
+        #[link(wasm_import_module = "harmonie_mod")]
         extern "C" {
             fn command_spawn_empty() -> u32;
         }
@@ -46,7 +46,7 @@ impl EntityCommands {
     // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
     #[cfg(feature = "wasm_runtime")]
     pub fn insert_component<T: Component>(&mut self, component: T) -> &mut Self {
-        #[link(wasm_import_module = "harmony_mod")]
+        #[link(wasm_import_module = "harmonie_mod")]
         extern "C" {
             fn entity_insert_component(
                 entity_id: u32,

@@ -28,7 +28,7 @@ pub fn __internal_generate_manifest(engine: Harmony) {
     };
     let encoded = bitcode::encode(&manifest);
 
-    #[link(wasm_import_module = "harmony_mod")]
+    #[link(wasm_import_module = "harmonie_mod")]
     extern "C" {
         fn submit_manifest(ptr: u64);
     }

@@ -1,6 +1,6 @@
 [package]
 name = "bevy_harmonize"
-description = "A minimal ecs runtime for harmony mods"
+description = "A minimal ecs runtime for harmonie mods"
 version = "0.0.0"
 edition = "2021"
 

@@ -1,4 +1,4 @@
-use harmony_mod::prelude::*;
+use harmonie_mod::prelude::*;
 
 init! {
     Mod::new("The cube")
