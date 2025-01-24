@@ -11,3 +11,7 @@ impl Plugin for ModloaderPlugin {
         app.add_plugins((mods::ModPlugin, devtools::DevtoolsPlugin));
     }
 }
+
+pub mod prelude {
+    pub use crate::ModloaderPlugin;
+}
