@@ -1,7 +1,8 @@
 use crate::ecs::{
     system::{ParamDescriptors, SystemParam},
-    Component, ConstVec,
+    Component,
 };
+use common::ConstVec;
 
 pub struct Commands;
 impl const SystemParam for Commands {

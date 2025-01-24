@@ -1,4 +1,4 @@
-use crate::ecs::ConstVec;
+use common::ConstVec;
 
 #[diagnostic::on_unimplemented(message = "`{Self}` is not a system", label = "invalid system")]
 pub trait System

@@ -1,6 +1,6 @@
 use super::system::ParamDescriptors;
-use crate::ecs::ConstVec;
 use bevy_utils_proc_macros::all_tuples;
+use common::ConstVec;
 
 #[const_trait]
 pub trait SystemParam: Sized {
