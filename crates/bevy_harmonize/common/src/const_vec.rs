@@ -24,7 +24,7 @@ impl<T: Copy, const N: usize> ConstVec<T, N> {
     }
 
     #[track_caller]
-    pub const fn push(mut self, item: T) -> Self {
+    pub const fn push(&mut self, item: T) -> &mut Self {
         let capacity = const { N };
         if self.len >= capacity {
             let type_name = std::any::type_name::<T>();
@@ -141,6 +141,12 @@ impl<T: Copy, const N: usize> IndexMut<usize> for ConstVec<T, N> {
     }
 }
 
+impl<T: Copy, const N: usize> Default for ConstVec<T, N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -150,7 +156,7 @@ mod tests {
         let mut vec = ConstVec::<u8, 128>::from_slice(&[1, 2, 3]);
         assert!(vec.len() == 3);
 
-        vec = vec.push(4);
+        vec.push(4);
         assert_eq!(vec.len(), 4);
         assert_eq!(vec.into_slice(), &[1, 2, 3, 4]);
     }
@@ -167,9 +173,9 @@ mod tests {
     #[test]
     fn into_vec() {
         let mut vec = ConstVec::<&'static str, 10>::new();
-        vec = vec.push("a");
-        vec = vec.push("b");
-        vec = vec.push("c");
+        vec.push("a");
+        vec.push("b");
+        vec.push("c");
         assert!(vec.len() == 3);
 
         assert_eq!(vec.into_vec(), vec!["a", "b", "c"]);
@@ -179,10 +185,11 @@ mod tests {
     fn length_panic() {
         let mut vec = ConstVec::<u32, 2>::new();
 
-        vec = vec.push(1);
-        vec = vec.push(2);
+        vec.push(1);
+        vec.push(2);
 
         let result = std::panic::catch_unwind(|| {
+            let mut vec = vec;
             vec.push(3);
         });
         assert!(result.is_err());
