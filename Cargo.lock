@@ -855,6 +855,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils_proc_macros",
  "bitcode",
+ "const_vec",
 ]
 
 [[package]]
@@ -882,7 +883,6 @@ name = "bevy_harmonize_common"
 version = "0.0.0"
 dependencies = [
  "bitcode",
- "const_panic",
 ]
 
 [[package]]
@@ -1882,6 +1882,13 @@ name = "const_soft_float"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87ca1caa64ef4ed453e68bb3db612e51cf1b2f5b871337f0fcab1c8f87cc3dff"
+
+[[package]]
+name = "const_vec"
+version = "0.0.0"
+dependencies = [
+ "const_panic",
+]
 
 [[package]]
 name = "constant_time_eq"

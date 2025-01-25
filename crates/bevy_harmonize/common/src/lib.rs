@@ -8,9 +8,6 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
-mod const_vec;
-pub use const_vec::*;
-
 mod schedule;
 pub use schedule::*;
 

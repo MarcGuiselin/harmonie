@@ -6,4 +6,3 @@ edition = "2021"
 
 [dependencies]
 bitcode.workspace = true
-const_panic.workspace = true

@@ -1,5 +1,7 @@
+use const_vec::ConstVec;
+
 use bevy_reflect::{TypeInfo, Typed};
-use common::{ConstVec, StableIdGetter};
+use common::StableIdGetter;
 
 use crate::ecs::Resource;
 

@@ -2,4 +2,4 @@
 
 cargo test \
     -p bevy_harmonize_api \ 
-    -p bevy_harmonize_common
+    -p const_vec

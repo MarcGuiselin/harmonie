@@ -1,3 +1,5 @@
+#![feature(const_type_name)]
+
 use const_panic::concat_panic;
 use std::{
     fmt::{Debug, Formatter, Result},
