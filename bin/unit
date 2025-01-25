@@ -1,2 +1,5 @@
 #!/bin/sh
-cargo test -p bevy_harmonize_common # --workspace omitted in the interest of speed
+
+cargo test \
+    -p bevy_harmonize_api \ 
+    -p bevy_harmonize_common

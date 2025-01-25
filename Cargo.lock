@@ -852,6 +852,7 @@ name = "bevy_harmonize_api"
 version = "0.0.0"
 dependencies = [
  "bevy_harmonize_common",
+ "bevy_reflect",
  "bevy_utils_proc_macros",
  "bitcode",
 ]

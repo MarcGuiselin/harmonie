@@ -7,6 +7,7 @@ edition = "2021"
 common = { package = "bevy_harmonize_common", path = "../common" }
 
 bitcode.workspace = true
+bevy_reflect.workspace = true
 bevy_utils_proc_macros.workspace = true
 
 [features]

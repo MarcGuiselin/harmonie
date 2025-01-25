@@ -3,8 +3,12 @@ pub use feature::*;
 
 mod manifest;
 pub use manifest::*;
+
 mod runtime;
 pub use runtime::*;
+
+mod schema;
+pub use schema::*;
 
 /// Access to the Harmony engine in order to add new features and mod existing ones
 ///

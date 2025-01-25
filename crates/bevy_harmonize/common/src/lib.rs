@@ -1,3 +1,4 @@
+#![feature(const_trait_impl)]
 #![feature(const_type_name)]
 
 use bitcode::{Decode, Encode};
@@ -18,6 +19,8 @@ pub use identifiers::*;
 
 mod utils;
 pub use utils::*;
+
+pub type StableIdGetter = fn() -> StableId<'static>;
 
 /// Identify structs
 #[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy)]
@@ -66,6 +69,7 @@ impl fmt::Debug for OwnedStableId {
 }
 
 /// A id shared between mods, used to identify objects defined in the manifest
+#[const_trait]
 pub trait HasStableId {
     const CRATE_NAME: &'static str;
     const VERSION: &'static str;
@@ -78,11 +82,6 @@ pub trait HasStableId {
             version: Self::VERSION,
             name: Self::NAME,
         }
-    }
-
-    #[inline]
-    fn get_owned_stable_id() -> OwnedStableId {
-        Self::get_stable_id().to_owned()
     }
 }
 

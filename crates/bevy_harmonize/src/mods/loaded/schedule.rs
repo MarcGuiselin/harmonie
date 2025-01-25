@@ -21,8 +21,8 @@ impl LoadedSchedules {
         let mut schedules = HashMap::default();
 
         // Allow only the default schedules for now
-        schedules.insert(Start::get_owned_stable_id(), Vec::new());
-        schedules.insert(Update::get_owned_stable_id(), Vec::new());
+        schedules.insert(Start::get_stable_id().to_owned(), Vec::new());
+        schedules.insert(Update::get_stable_id().to_owned(), Vec::new());
 
         // Group together schedules with the same schedule id
         for descriptor in descriptors {
