@@ -18,7 +18,7 @@ where
     fn add_to_schedule(this: Self, schedule: &mut common::Schedule) {
         let id = common::SystemId::from_type::<F::System>();
         let system = IntoSystem::into_system(this);
-        let params = system.param_descriptors().into_vec();
+        let params = system.params().into_vec();
 
         schedule.systems.push(common::System { id, params });
     }

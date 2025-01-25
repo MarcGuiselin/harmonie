@@ -1,4 +1,4 @@
-use super::{system_param::SystemParamItem, In, IntoSystem, ParamDescriptors, System, SystemParam};
+use super::{system_param::SystemParamItem, ConstParams, In, IntoSystem, System, SystemParam};
 use bevy_utils_proc_macros::all_tuples;
 use std::marker::PhantomData;
 
@@ -18,7 +18,7 @@ where
 {
     func: F,
     param_state: <F::Param as SystemParam>::State,
-    param_descriptors: ParamDescriptors,
+    params: ConstParams,
     name: &'static str,
     // NOTE: PhantomData<fn()-> T> gives this safe Send/Sync impls
     marker: PhantomData<fn() -> Marker>,
@@ -99,7 +99,7 @@ where
         FunctionSystem {
             func,
             param_state: F::Param::init_state(),
-            param_descriptors: F::Param::get_descriptors(),
+            params: F::Param::get_descriptors(),
             name: std::any::type_name::<F>(),
             marker: PhantomData,
         }
@@ -127,8 +127,8 @@ where
     }
 
     #[inline]
-    fn param_descriptors(&self) -> ParamDescriptors {
-        self.param_descriptors.clone()
+    fn params(&self) -> ConstParams {
+        self.params.clone()
     }
 }
 

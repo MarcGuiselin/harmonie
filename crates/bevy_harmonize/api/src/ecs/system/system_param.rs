@@ -1,6 +1,6 @@
 use const_vec::ConstVec;
 
-use super::system::ParamDescriptors;
+use super::system::ConstParams;
 use bevy_utils_proc_macros::all_tuples;
 
 #[const_trait]
@@ -21,7 +21,7 @@ pub trait SystemParam: Sized {
     fn get_param<'state>(state: &'state mut Self::State) -> Self::Item<'state>;
 
     /// Returns a descriptor for this param
-    fn get_descriptors() -> ParamDescriptors;
+    fn get_descriptors() -> ConstParams;
 }
 
 /// Shorthand way of accessing the associated type [`SystemParam::Item`] for a given [`SystemParam`].
@@ -49,11 +49,11 @@ macro_rules! impl_system_param_tuple {
             }
 
             #[inline]
-            fn get_descriptors() -> ParamDescriptors {
+            fn get_descriptors() -> ConstParams {
                 #[allow(unused_mut)]
                 let mut vec = ConstVec::new();
                 $(
-                    vec = vec.append($param::get_descriptors());
+                    vec.append($param::get_descriptors());
                 )*
                 vec
             }

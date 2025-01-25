@@ -6,7 +6,7 @@ mod system_param;
 
 pub use function_system::FunctionSystem;
 pub use params::*;
-pub use system::{BoxedSystem, ParamDescriptors, System};
+pub use system::{BoxedSystem, ConstParams, System};
 pub use system_config::IntoSystemConfigs;
 pub use system_param::SystemParam;
 

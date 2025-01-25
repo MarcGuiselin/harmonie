@@ -1,7 +1,7 @@
 use const_vec::ConstVec;
 
 use crate::ecs::{
-    system::{ParamDescriptors, SystemParam},
+    system::{ConstParams, SystemParam},
     Component,
 };
 
@@ -18,7 +18,7 @@ impl const SystemParam for Commands {
         Commands
     }
 
-    fn get_descriptors() -> ParamDescriptors {
+    fn get_descriptors() -> ConstParams {
         ConstVec::from_slice(&[common::Param::Command])
     }
 }
