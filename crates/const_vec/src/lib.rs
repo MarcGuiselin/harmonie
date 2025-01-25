@@ -44,7 +44,7 @@ impl<T: Copy, const N: usize> ConstVec<T, N> {
     }
 
     #[track_caller]
-    pub const fn append(mut self, vec: Self) -> Self {
+    pub const fn append(&mut self, vec: Self) -> &mut Self {
         let capacity = const { N };
         if self.len + vec.len > capacity {
             let type_name = std::any::type_name::<T>();
@@ -199,11 +199,9 @@ mod tests {
 
     #[test]
     fn append() {
-        let vec1 = ConstVec::<u32, 4>::from_slice(&[1, 2]);
-        let vec2 = ConstVec::from_slice(&[3, 4]);
-
-        let result = vec1.append(vec2);
-        assert_eq!(result.into_slice(), &[1, 2, 3, 4]);
+        let mut vec = ConstVec::<u32, 4>::from_slice(&[1, 2]);
+        vec.append(ConstVec::from_slice(&[3, 4]));
+        assert_eq!(vec.into_slice(), &[1, 2, 3, 4]);
     }
 
     #[test]
@@ -212,6 +210,7 @@ mod tests {
         let vec2 = ConstVec::from_slice(&[3, 4, 5]);
 
         let result = std::panic::catch_unwind(|| {
+            let mut vec1 = vec1;
             vec1.append(vec2);
         });
         assert!(result.is_err());
