@@ -1,10 +1,9 @@
 use harmonie_mod::prelude::*;
 
-init! {
-    Mod::new("The cube")
-        .add_systems(Start, start)
-        .add_systems(Update, update)
-}
+const SCHEMA: Schema = Mod::new("The cube")
+    .add_systems(Start, start)
+    .add_systems(Update, update)
+    .into_schema();
 
 #[derive(Component)]
 pub struct Cube;
