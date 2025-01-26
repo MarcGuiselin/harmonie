@@ -46,3 +46,18 @@ impl<T> std::ops::DerefMut for In<T> {
         &mut self.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::prelude::Commands;
+
+    #[test]
+    fn simple_system() {
+        fn sys(mut _commands: Commands) {
+            // Do something
+        }
+
+        let _system = IntoSystem::into_system(sys);
+    }
+}
