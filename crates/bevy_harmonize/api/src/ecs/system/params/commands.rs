@@ -1,10 +1,12 @@
+use const_vec::ConstVec;
+
 use crate::ecs::{
-    system::{Params, SystemParam},
+    system::{ConstParams, SystemParam},
     Component,
 };
 
 pub struct Commands;
-impl SystemParam for Commands {
+impl const SystemParam for Commands {
     type State = ();
     type Item<'state> = Commands;
 
@@ -16,8 +18,8 @@ impl SystemParam for Commands {
         Commands
     }
 
-    fn get_params() -> Params {
-        vec![common::Param::Command]
+    fn get_descriptors() -> ConstParams {
+        ConstVec::from_slice(&[common::Param::Command])
     }
 }
 
