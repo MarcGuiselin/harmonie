@@ -84,11 +84,7 @@ macro_rules! impl_system_function {
 // of `SystemParam` created.
 all_tuples!(impl_system_function, 0, 0, F);
 
-/// A marker type used to distinguish regular function systems from exclusive function systems.
-#[doc(hidden)]
-pub struct IsFunctionSystem;
-
-impl<Marker, F> const IntoSystem<F::In, F::Out, (IsFunctionSystem, Marker)> for F
+impl<Marker, F> const IntoSystem<F::In, F::Out, Marker> for F
 where
     Marker: 'static,
     F: SystemParamFunction<Marker>,

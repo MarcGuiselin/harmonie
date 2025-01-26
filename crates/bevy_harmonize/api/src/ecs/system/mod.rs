@@ -31,14 +31,6 @@ pub trait IntoSystem<In, Out, Marker>: Sized {
     }
 }
 
-// All systems implicitly implement IntoSystem.
-impl<T: System> const IntoSystem<T::In, T::Out, ()> for T {
-    type System = T;
-    fn into_system(this: Self) -> Self {
-        this
-    }
-}
-
 /// Wrapper type to mark a [`SystemParam`] as an input.
 pub struct In<In>(pub In);
 
