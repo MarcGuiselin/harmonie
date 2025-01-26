@@ -9,11 +9,10 @@ compile_error!(
 );
 
 pub mod ecs;
-pub mod init;
+pub mod schema;
 pub(crate) mod utils;
 
 pub mod prelude {
     pub use crate::ecs::{system::Commands, Component};
-    pub use crate::init::{Feature, FeatureBuilder, Harmony};
     pub use common::{HasStableId, Start, Update};
 }
