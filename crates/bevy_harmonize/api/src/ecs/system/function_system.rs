@@ -82,7 +82,7 @@ macro_rules! impl_system_function {
 
 // Note that we rely on the highest impl to be <= the highest order of the tuple impls
 // of `SystemParam` created.
-all_tuples!(impl_system_function, 0, 0, F);
+all_tuples!(impl_system_function, 0, 16, F);
 
 impl<Marker, F> const IntoSystem<F::In, F::Out, Marker> for F
 where
