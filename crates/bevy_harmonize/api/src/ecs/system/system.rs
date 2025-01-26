@@ -1,6 +1,6 @@
 use std::any::TypeId;
 
-use const_vec::ConstVec;
+use super::Params;
 
 #[diagnostic::on_unimplemented(message = "`{Self}` is not a system", label = "invalid system")]
 pub trait System
@@ -27,10 +27,8 @@ where
     fn run(&mut self, input: Self::In) -> Self::Out;
 
     /// List of [`common::Param`]s that this system has.
-    fn params(&self) -> ConstParams;
+    fn params(&self) -> Params;
 }
-
-pub type ConstParams = ConstVec<common::Param<'static>, 64>;
 
 /// A convenience type alias for a boxed [`System`] trait object.
 pub type BoxedSystem<In = (), Out = ()> = Box<dyn System<In = In, Out = Out>>;
