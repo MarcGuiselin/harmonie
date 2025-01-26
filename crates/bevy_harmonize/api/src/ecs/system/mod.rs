@@ -22,12 +22,19 @@ pub trait IntoSystem<In, Out, Marker>: Sized {
     type System: System<In = In, Out = Out>;
 
     /// Turns this value into its corresponding [`System`].
-    fn into_system(this: Self) -> Self::System;
+    fn into_system(self) -> Self::System;
+
+    /// Export system metadata
+    fn into_metadata() -> fn() -> common::System<'static>;
 
     /// Get the [`TypeId`] of the [`System`] produced after calling [`into_system`](`IntoSystem::into_system`).
     #[inline]
-    fn system_type_id(&self) -> TypeId {
+    fn type_id() -> TypeId {
         TypeId::of::<Self::System>()
+    }
+
+    fn get_type_id(&self) -> TypeId {
+        Self::type_id()
     }
 }
 
@@ -50,10 +57,16 @@ impl<T> std::ops::DerefMut for In<T> {
 
 #[cfg(test)]
 mod tests {
-    use common::Param;
-
     use super::*;
     use crate::prelude::Commands;
+
+    fn into_metadata<T, Marker>(_system: T) -> common::System<'static>
+    where
+        T: IntoSystem<(), (), Marker> + Copy,
+    {
+        let metadata = T::into_metadata();
+        metadata()
+    }
 
     #[test]
     fn simple_system() {
@@ -70,17 +83,31 @@ mod tests {
             system.name(),
             "bevy_harmonize_api::ecs::system::tests::simple_system::sys"
         );
-        assert_eq!(system.params().into_slice(), &[]);
-
         system.run(());
         assert!(unsafe { RAN }, "system did not run");
     }
 
     #[test]
     fn system_with_param() {
-        fn sys(mut _commands: Commands) {}
+        static mut RAN: bool = false;
 
-        let system = IntoSystem::into_system(sys);
-        assert_eq!(system.params().into_slice(), vec![Param::Command]);
+        fn sys(mut _commands: Commands) {
+            unsafe {
+                RAN = true;
+            }
+        }
+
+        let mut system = IntoSystem::into_system(sys);
+        let system_id = common::SystemId::from_type(system.type_id());
+        assert_eq!(
+            system.name(),
+            "bevy_harmonize_api::ecs::system::tests::system_with_param::sys"
+        );
+        system.run(());
+        assert!(unsafe { RAN }, "system did not run");
+
+        let meta = into_metadata(sys);
+        assert_eq!(meta.params, vec![common::Param::Command]);
+        assert_eq!(meta.id, system_id);
     }
 }

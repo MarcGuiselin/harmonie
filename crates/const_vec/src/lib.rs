@@ -44,12 +44,12 @@ impl<T: Copy, const N: usize> ConstVec<T, N> {
     }
 
     #[track_caller]
-    pub const fn append(&mut self, vec: Self) -> &mut Self {
+    pub const fn extend<const N2: usize>(&mut self, vec: ConstVec<T, N2>) -> &mut Self {
         let capacity = const { N };
         if self.len + vec.len > capacity {
             let type_name = std::any::type_name::<T>();
             concat_panic!(
-                "\nCannot append ",
+                "\nCannot extend ",
                 vec.len,
                 " items into a ConstVec<",
                 type_name,
@@ -95,6 +95,11 @@ impl<T: Copy, const N: usize> ConstVec<T, N> {
         vec
     }
 
+    pub const fn into_slice(&self) -> &[T] {
+        // SAFETY: We are certain that all items in the buffer up to length are initialized
+        unsafe { std::slice::from_raw_parts(self.buffer.as_ptr() as *const T, self.len) }
+    }
+
     pub fn into_vec(&self) -> Vec<T> {
         let mut vec = Vec::with_capacity(self.len);
         for i in 0..self.len {
@@ -102,11 +107,6 @@ impl<T: Copy, const N: usize> ConstVec<T, N> {
             vec.push(unsafe { self.buffer[i].assume_init() });
         }
         vec
-    }
-
-    pub fn into_slice(&self) -> &[T] {
-        // SAFETY: We are certain that all items in the buffer up to length are initialized
-        unsafe { std::slice::from_raw_parts(self.buffer.as_ptr() as *const T, self.len) }
     }
 }
 
@@ -200,18 +200,18 @@ mod tests {
     #[test]
     fn append() {
         let mut vec = ConstVec::<u32, 4>::from_slice(&[1, 2]);
-        vec.append(ConstVec::from_slice(&[3, 4]));
+        vec.extend(ConstVec::<u32, 10>::from_slice(&[3, 4]));
         assert_eq!(vec.into_slice(), &[1, 2, 3, 4]);
     }
 
     #[test]
     fn append_panic() {
         let vec1 = ConstVec::<u32, 4>::from_slice(&[1, 2]);
-        let vec2 = ConstVec::from_slice(&[3, 4, 5]);
+        let vec2 = ConstVec::<u32, 3>::from_slice(&[3, 4, 5]);
 
         let result = std::panic::catch_unwind(|| {
             let mut vec1 = vec1;
-            vec1.append(vec2);
+            vec1.extend(vec2);
         });
         assert!(result.is_err());
     }

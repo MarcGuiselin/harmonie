@@ -25,9 +25,6 @@ where
 
     /// Runs the system with the given input
     fn run(&mut self, input: Self::In) -> Self::Out;
-
-    /// List of [`common::Param`]s that this system has.
-    fn params(&self) -> ConstParams;
 }
 
 pub type ConstParams = ConstVec<common::Param<'static>, 64>;

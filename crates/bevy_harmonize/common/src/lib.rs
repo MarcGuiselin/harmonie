@@ -87,11 +87,13 @@ pub trait HasStableId {
 pub struct SystemId(u64);
 
 impl SystemId {
-    pub fn from_type<T: ?Sized + 'static>() -> Self {
-        let type_id = TypeId::of::<T>();
+    pub fn of<T: ?Sized + 'static>() -> Self {
+        Self::from_type(TypeId::of::<T>())
+    }
 
+    pub fn from_type(id: TypeId) -> Self {
         let mut hasher = DefaultHasher::new();
-        type_id.hash(&mut hasher);
+        id.hash(&mut hasher);
         let result = hasher.finish();
 
         Self(result)

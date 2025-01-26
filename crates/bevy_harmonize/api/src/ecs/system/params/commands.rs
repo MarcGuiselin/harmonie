@@ -18,7 +18,7 @@ impl const SystemParam for Commands {
         Commands
     }
 
-    fn get_descriptors() -> ConstParams {
+    fn get_metadata() -> ConstParams {
         ConstVec::from_slice(&[common::Param::Command])
     }
 }

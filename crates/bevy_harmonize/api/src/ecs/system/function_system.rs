@@ -1,5 +1,6 @@
-use super::{system_param::SystemParamItem, ConstParams, In, IntoSystem, System, SystemParam};
+use super::{system_param::SystemParamItem, In, IntoSystem, System, SystemParam};
 use bevy_utils_proc_macros::all_tuples;
+use common::SystemId;
 use std::marker::PhantomData;
 
 /// The [`System`] counter part of an ordinary function.
@@ -18,7 +19,6 @@ where
 {
     func: F,
     param_state: <F::Param as SystemParam>::State,
-    params: ConstParams,
     name: &'static str,
     // NOTE: PhantomData<fn()-> T> gives this safe Send/Sync impls
     marker: PhantomData<fn() -> Marker>,
@@ -91,13 +91,20 @@ where
     <F as SystemParamFunction<Marker>>::Param: ~const SystemParam,
 {
     type System = FunctionSystem<Marker, F>;
-    fn into_system(func: Self) -> Self::System {
+
+    fn into_system(self) -> Self::System {
         FunctionSystem {
-            func,
+            func: self,
             param_state: F::Param::init_state(),
-            params: F::Param::get_descriptors(),
             name: std::any::type_name::<F>(),
             marker: PhantomData,
+        }
+    }
+
+    fn into_metadata() -> fn() -> common::System<'static> {
+        || common::System {
+            id: SystemId::of::<Self::System>(),
+            params: F::Param::get_metadata().into_vec(),
         }
     }
 }
@@ -120,11 +127,6 @@ where
         let params = F::Param::get_param(&mut self.param_state);
         let out = self.func.run(input, params);
         out
-    }
-
-    #[inline]
-    fn params(&self) -> ConstParams {
-        self.params.clone()
     }
 }
 
@@ -169,7 +171,7 @@ mod tests {
 
             assert_eq!(
                 system.type_id(),
-                function.system_type_id(),
+                function.get_type_id(),
                 "System::type_id should be consistent with IntoSystem::system_type_id"
             );
 
