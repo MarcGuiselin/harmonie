@@ -46,3 +46,40 @@ impl<T> std::ops::DerefMut for In<T> {
         &mut self.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use common::Param;
+
+    use super::*;
+    use crate::prelude::Commands;
+
+    #[test]
+    fn simple_system() {
+        static mut RAN: bool = false;
+
+        fn sys() {
+            unsafe {
+                RAN = true;
+            }
+        }
+
+        let mut system = IntoSystem::into_system(sys);
+        assert_eq!(
+            system.name(),
+            "bevy_harmonize_api::ecs::system::tests::simple_system::sys"
+        );
+        assert_eq!(system.params(), vec![]);
+
+        system.run(());
+        assert!(unsafe { RAN }, "system did not run");
+    }
+
+    #[test]
+    fn system_with_param() {
+        fn sys(mut _commands: Commands) {}
+
+        let system = IntoSystem::into_system(sys);
+        assert_eq!(system.params(), vec![Param::Command]);
+    }
+}
