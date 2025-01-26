@@ -70,7 +70,7 @@ mod tests {
             system.name(),
             "bevy_harmonize_api::ecs::system::tests::simple_system::sys"
         );
-        assert_eq!(system.params(), vec![]);
+        assert_eq!(system.params().into_slice(), &[]);
 
         system.run(());
         assert!(unsafe { RAN }, "system did not run");
@@ -81,6 +81,6 @@ mod tests {
         fn sys(mut _commands: Commands) {}
 
         let system = IntoSystem::into_system(sys);
-        assert_eq!(system.params(), vec![Param::Command]);
+        assert_eq!(system.params().into_slice(), vec![Param::Command]);
     }
 }
