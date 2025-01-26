@@ -4,6 +4,8 @@ mod system;
 mod system_config;
 mod system_param;
 
+use std::any::TypeId;
+
 pub use function_system::FunctionSystem;
 pub use params::*;
 pub use system::{BoxedSystem, ConstParams, System};
@@ -21,6 +23,12 @@ pub trait IntoSystem<In, Out, Marker>: Sized {
 
     /// Turns this value into its corresponding [`System`].
     fn into_system(this: Self) -> Self::System;
+
+    /// Get the [`TypeId`] of the [`System`] produced after calling [`into_system`](`IntoSystem::into_system`).
+    #[inline]
+    fn system_type_id(&self) -> TypeId {
+        TypeId::of::<Self::System>()
+    }
 }
 
 // All systems implicitly implement IntoSystem.
