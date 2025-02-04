@@ -4,6 +4,7 @@ members = [
     "crates/*",
     "crates/bevy_harmonize/api",
     "crates/bevy_harmonize/build",
+    "crates/bevy_harmonize/build/codegen/crates/*",
     "crates/bevy_harmonize/common",
 ]
 

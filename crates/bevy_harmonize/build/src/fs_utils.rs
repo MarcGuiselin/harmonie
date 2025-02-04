@@ -108,6 +108,28 @@ where
     Ok(())
 }
 
+/// Iterates through a directory's descendents, deleting those for whom the condition yields true
+pub async fn empty_dir_conditional<P, C, E>(path: P, condition: C) -> Result<(), E>
+where
+    P: AsRef<Path>,
+    C: Fn(&Path) -> bool,
+    E: rancor::Source,
+{
+    let mut entries = read_dir(path).await?;
+
+    while let Some(entry) = entries.try_next().await.into_error()? {
+        let path = entry.path();
+        if condition(&path) {
+            if entry.file_type().await.into_error()?.is_dir() {
+                remove_dir_all(path).await?;
+            } else {
+                remove_file(path).await?;
+            }
+        }
+    }
+    Ok(())
+}
+
 pub async fn create_dir_all_empty<P, E>(path: P) -> Result<(), E>
 where
     P: AsRef<Path>,

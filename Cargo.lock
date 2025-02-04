@@ -3774,6 +3774,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "mod_empty"
+version = "0.0.0"
+
+[[package]]
 name = "more-asserts"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

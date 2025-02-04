@@ -20,7 +20,7 @@ mod fs_utils;
 const TARGET_DIR: &str = "target";
 const BUILD_DIR: &str = "harmonie-build";
 const TEMP_DIR: &str = "temp";
-const CODEGEN_DIR: &str = "codegen";
+const CODEGEN_DIR: &str = "crates/bevy_harmonize/build/codegen/crates";
 const WASM_TARGET: &str = "wasm32-unknown-unknown";
 
 pub async fn build<E>(
@@ -32,32 +32,29 @@ where
     E: rancor::Source,
 {
     let start = Instant::now();
-    info!("Building mods from {:?}", mods_directory);
+    println!("Building mods from {:?}", mods_directory);
 
     let sources = ModSource::from_dir(&mods_directory).await?;
     if sources.is_empty() {
-        warn!("There are no mods to build");
+        println!("There are no mods to build");
         return Ok(Vec::new());
     }
+
+    println!("{:?}", &sources);
 
     let target_dir = cargo_directory.join(TARGET_DIR);
     let build_dir = target_dir.join(BUILD_DIR);
     let dev_mode = if release { "release" } else { "debug" };
-    let codegen_dir = build_dir.join(CODEGEN_DIR);
+    let codegen_dir = cargo_directory.join(CODEGEN_DIR);
 
     // Prepare codegen
-    let codegen_crates_dir = codegen_dir.join("crates");
-    fs_utils::create_dir_all_empty(&codegen_crates_dir).await?;
-    let contents = format!(
-        "{}",
-        &CargoWorkspace {
-            modloader_version: env!("CARGO_PKG_VERSION"),
-            dev_mode,
-        }
-    );
-    fs_utils::write(codegen_dir.join("Cargo.toml"), contents.as_bytes()).await?;
+    fs_utils::empty_dir_conditional(&codegen_dir, |path| {
+        // Avoid deleting the empty crate which is kept version controled
+        path.ends_with("empty")
+    })
+    .await?;
     for source in sources.iter() {
-        source.codegen(&codegen_crates_dir, &dev_mode).await?;
+        source.codegen(&codegen_dir, &dev_mode).await?;
     }
 
     // Build a debug release of mods for manifest generation
@@ -190,13 +187,6 @@ impl ModSource {
             &package_suffix
         )
     }
-}
-
-#[derive(bart_derive::BartDisplay)]
-#[template = "templates/workspace.toml"]
-struct CargoWorkspace<'a> {
-    modloader_version: &'a str,
-    dev_mode: &'a str,
 }
 
 #[derive(bart_derive::BartDisplay)]

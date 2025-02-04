@@ -86,6 +86,8 @@ fn update_build(mut task: ResMut<BuildTask>, mut mods: ResMut<Mods>) {
 
     // Initialize a new task when the previous one is finished
     if task.trigger_build.try_recv().is_ok() && task.compute.is_none() {
+        println!("trigger_build!");
+
         let debug = cfg!(debug_assertions);
         let mods_directory = Path::new(MOD_DIR).to_path_buf();
         let cargo_directory = Path::new(CARGO_DIR).to_path_buf();
