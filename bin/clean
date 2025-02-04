@@ -1,0 +1,5 @@
+#!/bin/sh
+
+find ./crates/bevy_harmonize/build/codegen/crates -mindepth 1 -type d -name "empty" -prune -o -type d -exec rm -rf {} +
+
+cargo clean
