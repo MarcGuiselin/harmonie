@@ -50,7 +50,7 @@ where
     // Prepare codegen
     fs_utils::empty_dir_conditional(&codegen_dir, |path| {
         // Avoid deleting the empty crate which is kept version controled
-        path.ends_with("empty")
+        !path.ends_with("empty")
     })
     .await?;
     for source in sources.iter() {
