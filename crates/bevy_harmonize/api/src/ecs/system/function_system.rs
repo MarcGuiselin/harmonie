@@ -84,11 +84,11 @@ macro_rules! impl_system_function {
 // of `SystemParam` created.
 all_tuples!(impl_system_function, 0, 16, F);
 
-impl<Marker, F> const IntoSystem<F::In, F::Out, Marker> for F
+impl<Marker, F> IntoSystem<F::In, F::Out, Marker> for F
 where
     Marker: 'static,
     F: SystemParamFunction<Marker>,
-    <F as SystemParamFunction<Marker>>::Param: ~const SystemParam,
+    <F as SystemParamFunction<Marker>>::Param: SystemParam,
 {
     type System = FunctionSystem<Marker, F>;
 
@@ -101,10 +101,10 @@ where
         }
     }
 
-    fn into_metadata() -> fn() -> common::System<'static> {
-        || common::System {
+    fn into_metadata() -> common::System<'static> {
+        common::System {
             id: SystemId::of::<Self::System>(),
-            params: F::Param::get_metadata().into_vec(),
+            params: F::Param::get_metadata(),
         }
     }
 }

@@ -18,11 +18,8 @@ where
     F: 'static + Sized + IntoSystem<(), (), Marker>,
 {
     fn into_configs(self) -> SystemConfig {
-        let system_getter = F::into_metadata();
-        let systems = vec![system_getter()];
-
         SystemConfig(common::Schedule {
-            systems,
+            systems: vec![F::into_metadata()],
             constraints: Vec::new(),
         })
     }

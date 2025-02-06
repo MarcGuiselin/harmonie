@@ -16,7 +16,6 @@ pub use system_param::SystemParam;
     message = "`{Self}` is not a valid system with input `{In}` and output `{Out}`",
     label = "invalid system"
 )]
-#[const_trait]
 pub trait IntoSystem<In, Out, Marker>: Sized {
     /// The type of [`System`] that this instance converts into.
     type System: System<In = In, Out = Out>;
@@ -25,7 +24,7 @@ pub trait IntoSystem<In, Out, Marker>: Sized {
     fn into_system(self) -> Self::System;
 
     /// Export system metadata
-    fn into_metadata() -> fn() -> common::System<'static>;
+    fn into_metadata() -> common::System<'static>;
 
     /// Get the [`TypeId`] of the [`System`] produced after calling [`into_system`](`IntoSystem::into_system`).
     #[inline]
@@ -64,8 +63,7 @@ mod tests {
     where
         T: IntoSystem<(), (), Marker> + Copy,
     {
-        let metadata = T::into_metadata();
-        metadata()
+        T::into_metadata()
     }
 
     #[test]
