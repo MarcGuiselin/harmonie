@@ -2,7 +2,7 @@
 
 For local development, this directory is used for mod codegen.
 
-The root cargo workspace will be used for mod building. This is nice because it allows for configuration-less language server integration.
+The root cargo workspace will be used for mod building. This is necessary because it allows for configuration-less language server integration for both mods and core libraries.
 
 ## The Empty Crate
 
