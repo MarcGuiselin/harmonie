@@ -1,6 +1,6 @@
-use harmonie_mod::prelude::*;
+use api::prelude::*;
 
-const SCHEMA: Schema = Mod::new("The cube")
+pub const SCHEMA: Schema = Mod::new("The cube")
     .add_systems(Start, start)
     .add_systems(Update, update)
     .into_schema();

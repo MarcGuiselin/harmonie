@@ -14,5 +14,6 @@ pub(crate) mod utils;
 
 pub mod prelude {
     pub use crate::ecs::{system::Commands, Component};
+    pub use crate::schema::{Mod, Schema};
     pub use common::{HasStableId, Start, Update};
 }

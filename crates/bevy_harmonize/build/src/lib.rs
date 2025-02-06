@@ -182,7 +182,7 @@ impl ModSource {
 
         let name = self.0.file_stem().unwrap().to_str().unwrap();
         format!(
-            "{}-{}",
+            "{}_{}",
             name.to_lowercase().replace(" ", "_"),
             &package_suffix
         )
