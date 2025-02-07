@@ -1,5 +1,8 @@
 #!/bin/sh
 
-cargo test \
-    -p bevy_harmonize_api \ 
-    -p const_vec
+# Removes codegen crates which can add errors to the tests, and run tests
+
+clean-codegen
+cargo test --workspace --exclude \
+    bevy_harmonize_build \
+    harmonie_client

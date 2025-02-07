@@ -1,2 +1,5 @@
 #!/bin/sh
+
+# Run a development environment
+
 cargo run -p harmonie_client
