@@ -1,7 +1,6 @@
 use super::{system_param::SystemParamItem, In, IntoSystem, System, SystemParam};
 use bevy_utils_proc_macros::all_tuples;
 use common::SystemId;
-use std::marker::PhantomData;
 
 /// The [`System`] counter part of an ordinary function.
 ///
@@ -20,8 +19,6 @@ where
     func: F,
     param_state: <F::Param as SystemParam>::State,
     name: &'static str,
-    // NOTE: PhantomData<fn()-> T> gives this safe Send/Sync impls
-    marker: PhantomData<fn() -> Marker>,
 }
 
 macro_rules! impl_system_function {
@@ -97,7 +94,6 @@ where
             func: self,
             param_state: F::Param::init_state(),
             name: std::any::type_name::<F>(),
-            marker: PhantomData,
         }
     }
 
