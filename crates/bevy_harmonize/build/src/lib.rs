@@ -6,7 +6,7 @@ use async_std::{
     stream::StreamExt,
     task::spawn,
 };
-use bevy_utils::tracing::{error, info, warn};
+use bevy_utils::tracing::{error, info};
 use futures_concurrency::prelude::*;
 use rancor::{fail, ResultExt};
 use sha2::{Digest, Sha256};
