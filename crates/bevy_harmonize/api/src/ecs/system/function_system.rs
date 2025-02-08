@@ -1,3 +1,5 @@
+use std::any::type_name;
+
 use super::{system_param::SystemParamItem, In, IntoSystem, System, SystemParam};
 use bevy_utils_proc_macros::all_tuples;
 use common::SystemId;
@@ -100,6 +102,7 @@ where
     fn into_metadata() -> common::System<'static> {
         common::System {
             id: SystemId::of::<Self::System>(),
+            name: type_name::<Self::System>(),
             params: F::Param::get_metadata(),
         }
     }

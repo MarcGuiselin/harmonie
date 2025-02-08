@@ -6,11 +6,14 @@ use common::StableIdGetter;
 mod a_mod;
 pub use a_mod::Mod;
 
+use crate::ecs::system::SystemConfigs;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Schema {
     pub(crate) name: Option<&'static str>,
     pub(crate) types: ConstVec<fn() -> &'static TypeInfo, 1024>,
     pub(crate) resources: ConstVec<(StableIdGetter, fn() -> Vec<u8>), 128>,
+    pub(crate) schedules: ConstVec<(StableIdGetter, SystemConfigs), 128>,
 }
 
 impl Schema {
@@ -19,6 +22,7 @@ impl Schema {
             name: None,
             types: ConstVec::new(),
             resources: ConstVec::new(),
+            schedules: ConstVec::new(),
         }
     }
 }

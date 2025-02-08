@@ -61,6 +61,7 @@ struct LoadedSystem {
     /// Whether or not this system depends on any other system
     /// In the case this is false, the scheduler can run this system first
     is_dependent: bool,
+    name: String,
     params: Vec<common::OwnedParam>,
 }
 
@@ -79,12 +80,14 @@ impl LoadedSchedule {
 
         // Add missing parameters to the systems
         for schedule in schedules {
-            for common::System { id, params } in schedule.systems.iter() {
+            for common::System { id, name, params } in schedule.systems.iter() {
                 let system = loaded_schedules.systems.entry(*id).or_insert(LoadedSystem {
                     is_dependent: false,
+                    name: String::new(),
                     params: Vec::new(),
                 });
-                system.params = params.iter().map(|param| param.to_owned()).collect();
+                system.name = String::from(*name);
+                system.params = params.iter().map(common::Param::to_owned).collect();
             }
         }
 
@@ -221,6 +224,7 @@ impl Builder {
                 id,
                 LoadedSystem {
                     is_dependent,
+                    name: String::new(),
                     params: Vec::new(),
                 },
             );

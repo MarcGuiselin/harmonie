@@ -9,14 +9,17 @@ use std::any::TypeId;
 pub use function_system::FunctionSystem;
 pub use params::*;
 pub use system::{BoxedSystem, ConstParams, System};
-pub use system_config::IntoSystemConfigs;
+pub use system_config::{IntoSystemConfigs, SystemConfigs};
 pub use system_param::SystemParam;
 
 #[diagnostic::on_unimplemented(
     message = "`{Self}` is not a valid system with input `{In}` and output `{Out}`",
     label = "invalid system"
 )]
-pub trait IntoSystem<In, Out, Marker>: Sized {
+pub trait IntoSystem<In, Out, Marker>
+where
+    Self: Sized,
+{
     /// The type of [`System`] that this instance converts into.
     type System: System<In = In, Out = Out>;
 
@@ -32,6 +35,7 @@ pub trait IntoSystem<In, Out, Marker>: Sized {
         TypeId::of::<Self::System>()
     }
 
+    #[inline]
     fn get_type_id(&self) -> TypeId {
         Self::type_id()
     }

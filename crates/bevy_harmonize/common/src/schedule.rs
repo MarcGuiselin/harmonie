@@ -38,6 +38,7 @@ pub enum Constraint<'a> {
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct System<'a> {
     pub id: SystemId,
+    pub name: &'a str,
     pub params: Vec<Param<'a>>,
 }
 

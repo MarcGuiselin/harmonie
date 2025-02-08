@@ -855,6 +855,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils_proc_macros",
  "bitcode",
+ "const_panic",
  "const_vec",
 ]
 
