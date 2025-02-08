@@ -2,5 +2,5 @@
 
 # Ensures there are no workspace errors by clearing codegen
 
-./clean-codegen
+clean-codegen
 cargo clean
