@@ -49,14 +49,14 @@ impl Mod {
         {
             T::type_info
         }
-        const fn into_configs<T, Marker>(_systems: T) -> fn() -> common::Schedule<'static>
+        const fn into_schedule<T, Marker>(_systems: T) -> fn() -> common::Schedule<'static>
         where
             T: IntoSchedule<Marker> + Copy,
         {
-            T::into_configs
+            T::into_schedule
         }
         let id_getter = type_info(schedule);
-        let system_configs = into_configs(systems);
+        let system_configs = into_schedule(systems);
         self.schema.schedules.push((id_getter, system_configs));
         self
     }

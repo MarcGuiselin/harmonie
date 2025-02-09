@@ -24,8 +24,8 @@ impl<Marker, T> IntoSchedule<()> for Chained<Marker, T>
 where
     T: IntoSchedule<Marker> + Copy,
 {
-    fn into_configs() -> common::Schedule<'static> {
-        let mut schedule = T::into_configs();
+    fn into_schedule() -> common::Schedule<'static> {
+        let mut schedule = T::into_schedule();
 
         for systems in schedule.systems.windows(2) {
             schedule.constraints.push(Constraint::Order {

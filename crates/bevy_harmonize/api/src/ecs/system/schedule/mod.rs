@@ -9,7 +9,7 @@ where
 {
     const IS_CHAINABLE: bool = false;
 
-    fn into_configs() -> Schedule<'static>;
+    fn into_schedule() -> Schedule<'static>;
 }
 
 mod chain;
@@ -39,7 +39,7 @@ impl<Marker, F> IntoSchedule<(FunctionMarker, Marker)> for F
 where
     F: 'static + Sized + IntoSystem<(), (), Marker> + Copy,
 {
-    fn into_configs() -> Schedule<'static> {
+    fn into_schedule() -> Schedule<'static> {
         Schedule {
             systems: vec![F::into_metadata()],
             constraints: Vec::new(),
@@ -61,11 +61,11 @@ macro_rules! impl_system_collection {
             const IS_CHAINABLE: bool = true;
 
             #[allow(non_snake_case)]
-            fn into_configs() -> Schedule<'static> {
+            fn into_schedule() -> Schedule<'static> {
                 let mut systems = Vec::new();
                 let mut constraints = Vec::new();
                 $(
-                    let add = $sys::into_configs();
+                    let add = $sys::into_schedule();
                     systems.extend(add.systems);
                     constraints.extend(add.constraints);
                 )*
@@ -104,7 +104,7 @@ mod tests {
     where
         T: IntoSchedule<Marker>,
     {
-        T::into_configs()
+        T::into_schedule()
     }
 
     #[test]
