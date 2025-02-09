@@ -134,7 +134,6 @@ where
     message = "`{Self}` is not a valid system",
     label = "invalid system"
 )]
-#[const_trait]
 pub trait SystemParamFunction<Marker>
 where
     Self: Send + Sync + 'static,

@@ -23,7 +23,10 @@ pub mod prelude {
     pub use bevy_reflect_derive::*;
     pub use bitcode::{Decode, Encode};
 
-    pub use crate::ecs::{system::Commands, Component, Resource};
+    pub use crate::ecs::{
+        system::{Commands, ConstrainSchedule, IntoSchedule},
+        Component, Resource,
+    };
     pub use crate::schema::{Mod, Schema};
 
     // Schedules

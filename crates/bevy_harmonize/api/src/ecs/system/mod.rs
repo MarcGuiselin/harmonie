@@ -1,15 +1,15 @@
 mod function_system;
 mod params;
+mod schedule;
 mod system;
-mod system_config;
 mod system_param;
 
 use std::any::TypeId;
 
 pub use function_system::FunctionSystem;
 pub use params::*;
+pub use schedule::{ConstrainSchedule, IntoSchedule};
 pub use system::{BoxedSystem, ConstParams, System};
-pub use system_config::{IntoSystemConfigs, SystemConfigs};
 pub use system_param::SystemParam;
 
 #[diagnostic::on_unimplemented(

@@ -1,6 +1,6 @@
 use bevy_reflect::{TypeInfo, Typed};
 
-use crate::ecs::{system::IntoSystemConfigs, Resource};
+use crate::ecs::{system::IntoSchedule, Resource};
 
 use super::Schema;
 
@@ -41,17 +41,23 @@ impl Mod {
     pub const fn add_systems<Marker>(
         &mut self,
         schedule: impl Typed + Copy,
-        systems: impl ~const IntoSystemConfigs<Marker>,
+        systems: impl IntoSchedule<Marker> + Copy,
     ) -> &mut Self {
-        const fn schedule_id_getter_from_value<T>(_schedule: T) -> fn() -> &'static TypeInfo
+        const fn type_info<T>(_schedule: T) -> fn() -> &'static TypeInfo
         where
             T: Typed + Copy,
         {
             T::type_info
         }
-        let getter = schedule_id_getter_from_value(schedule);
-        let system_configs = IntoSystemConfigs::into_configs(systems);
-        self.schema.schedules.push((getter, system_configs));
+        const fn into_configs<T, Marker>(_systems: T) -> fn() -> common::Schedule<'static>
+        where
+            T: IntoSchedule<Marker> + Copy,
+        {
+            T::into_configs
+        }
+        let id_getter = type_info(schedule);
+        let system_configs = into_configs(systems);
+        self.schema.schedules.push((id_getter, system_configs));
         self
     }
 }
@@ -60,6 +66,7 @@ impl Mod {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ecs::system::ConstrainSchedule;
     use bevy_reflect::Reflect;
     use bitcode::Encode;
     use common::{StableId, Start, Update};
@@ -121,7 +128,7 @@ mod tests {
 
         const SCHEMA: Schema = Mod::new("Test add_systems")
             .add_systems(Start, system1)
-            .add_systems(Update, (system1, system3).chain())
+            .add_systems(Update, (system2, system3).chain())
             .into_schema();
 
         let Schema {
@@ -136,11 +143,22 @@ mod tests {
             StableId::from_type_info(schedules[0].0()),
             StableId::from_typed::<Start>()
         );
-        assert_eq!(schedules[0].1.into_schedule().systems.len(), 1);
+        let common::Schedule {
+            systems,
+            constraints,
+        } = (schedules[0].1)();
+        assert_eq!(systems.len(), 1);
+        assert_eq!(constraints.len(), 0);
+
         assert_eq!(
             StableId::from_type_info(schedules[1].0()),
             StableId::from_typed::<Update>()
         );
-        assert_eq!(schedules[1].1.into_schedule().systems.len(), 2);
+        let common::Schedule {
+            systems,
+            constraints,
+        } = (schedules[1].1)();
+        assert_eq!(systems.len(), 2);
+        assert_eq!(constraints.len(), 1);
     }
 }
