@@ -3,6 +3,5 @@
 # Removes codegen crates which can add errors to the tests, and run tests
 
 clean-codegen
-cargo test --workspace --exclude \
-    bevy_harmonize_build \
-    harmonie_client
+cargo test -p const_vec
+RUSTFLAGS="" cargo test -p bevy_harmonize_api --features "test"

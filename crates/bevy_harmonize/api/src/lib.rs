@@ -1,6 +1,10 @@
 #![allow(dead_code)] // TODO: remove
 #![feature(const_type_id)]
 #![feature(const_type_name)]
+// Nightly has a weird issue when testing and enabling const_trait_impl via RUSTFLAGS
+// It produces an error saying the feature const_trait_impl is not enabled, but when enabled warns that it is already enabled (due to RUSTFLAGS)
+// Thus, to run tests it is necessary to set RUSTFLAGS="" and use the feature "test"
+#![cfg_attr(feature = "test", feature(const_trait_impl))]
 
 #[cfg(all(feature = "generate_manifest", feature = "wasm_runtime"))]
 compile_error!(
