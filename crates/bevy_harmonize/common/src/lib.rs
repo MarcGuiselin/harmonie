@@ -1,4 +1,3 @@
-#![feature(const_trait_impl)]
 #![feature(const_type_name)]
 
 use bitcode::{Decode, Encode};

@@ -58,6 +58,7 @@
             inherit buildInputs;
 
             LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath buildInputs;
+            RUSTFLAGS="-Z crate-attr=feature(const_trait_impl)";
           };
         }
       );
