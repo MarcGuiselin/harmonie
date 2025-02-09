@@ -6,3 +6,5 @@ edition = "2021"
 
 [dependencies]
 bitcode.workspace = true
+bevy_reflect.workspace = true
+bevy_reflect_derive.workspace = true

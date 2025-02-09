@@ -398,7 +398,7 @@ where
     };
     let env = wasmer::FunctionEnv::new(&mut store, state);
     let import_object = wasmer::imports! {
-        "harmonie_mod" => {
+        "bevy_harmonize" => {
             "reserve_component_id" => wasmer::Function::new_typed_with_env(&mut store, &env, reserve_component_id),
             "submit_manifest" => wasmer::Function::new_typed_with_env(&mut store, &env, submit_manifest),
         },
@@ -416,11 +416,11 @@ where
 
     let init: wasmer::TypedFunction<(), ()> = instance
         .exports
-        .get_typed_function(&store, "harmonie_mod_generate_manifest")
-        .expect("could not find harmonie_mod_generate_manifest function");
+        .get_typed_function(&store, "bevy_harmonize_generate_manifest")
+        .expect("could not find bevy_harmonize_generate_manifest function");
 
     init.call(&mut store)
-        .expect("failed to call harmonie_mod_generate_manifest");
+        .expect("failed to call bevy_harmonize_generate_manifest");
 
     let encoded = env
         .as_mut(&mut store)

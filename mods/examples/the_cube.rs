@@ -5,7 +5,7 @@ pub const SCHEMA: Schema = Mod::new("The cube")
     .add_systems(Update, update)
     .into_schema();
 
-#[derive(Component)]
+#[derive(Reflect, Encode, Decode)]
 pub struct Cube;
 
 fn start(

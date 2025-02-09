@@ -2,5 +2,5 @@ mod component;
 mod resource;
 pub mod system;
 
-pub use component::*;
-pub use resource::*;
+pub use component::Component;
+pub use resource::Resource;

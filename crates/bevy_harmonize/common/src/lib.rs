@@ -1,11 +1,13 @@
 #![feature(const_type_name)]
 
-use bitcode::{Decode, Encode};
 use std::{
     any::TypeId,
     fmt,
     hash::{DefaultHasher, Hash, Hasher},
 };
+
+use bevy_reflect::{TypeInfo, Typed};
+use bitcode::{Decode, Encode};
 
 mod schedule;
 pub use schedule::*;
@@ -16,22 +18,34 @@ pub use identifiers::*;
 mod utils;
 pub use utils::*;
 
-pub type StableIdGetter = fn() -> StableId<'static>;
-
 /// Identify structs
 #[derive(Encode, Decode, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct StableId<'a> {
     pub crate_name: &'a str,
-    pub version: &'a str,
+    // pub crate_version: &'a str, // TODO: add to bevy_reflect?
     pub name: &'a str,
 }
 
 impl<'a> StableId<'a> {
-    // Not ideal, but simply taking [this advice](https://stackoverflow.com/questions/72105604/implement-toowned-for-user-defined-types#answer-72106272:~:text=If%20you%20just%20want%20to%20be%20able%20to%20call%20a%20.to_owned()%20method%20on%20a%20DataRef%2C%20don%27t%20bother%20with%20the%20ToOwned%20trait%3B%20just%20write%20an%20inherent%20(non%2Dtrait)%20method.)
+    pub fn from_typed<T>() -> StableId<'static>
+    where
+        T: Typed,
+    {
+        Self::from_type_info(T::type_info())
+    }
+
+    pub fn from_type_info(type_info: &TypeInfo) -> StableId<'static> {
+        let path = type_info.type_path_table();
+        let crate_name = path.crate_name().unwrap_or("unknown");
+        let name = type_info.type_path_table().short_path();
+        StableId { crate_name, name }
+    }
+}
+
+impl<'a> StableId<'a> {
     pub fn to_owned(&self) -> OwnedStableId {
         OwnedStableId {
             crate_name: self.crate_name.to_owned(),
-            version: self.version.to_owned(),
             name: self.name.to_owned(),
         }
     }
@@ -39,45 +53,32 @@ impl<'a> StableId<'a> {
 
 impl<'a> fmt::Debug for StableId<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "StableId(\"{}::{} {}\")",
-            self.crate_name, self.name, self.version
-        )
+        write!(f, "StableId(\"{}::{}\")", self.crate_name, self.name)
     }
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct OwnedStableId {
     pub crate_name: String,
-    pub version: String,
     pub name: String,
+}
+
+impl OwnedStableId {
+    pub fn from_typed<T>() -> OwnedStableId
+    where
+        T: Typed,
+    {
+        StableId::from_typed::<T>().to_owned()
+    }
+
+    pub fn from_type_info(type_info: &TypeInfo) -> OwnedStableId {
+        StableId::from_type_info(type_info).to_owned()
+    }
 }
 
 impl fmt::Debug for OwnedStableId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "OwnedStableId(\"{}::{} {}\")",
-            self.crate_name, self.name, self.version
-        )
-    }
-}
-
-/// A id shared between mods, used to identify objects defined in the manifest
-#[const_trait]
-pub trait HasStableId {
-    const CRATE_NAME: &'static str;
-    const VERSION: &'static str;
-    const NAME: &'static str;
-
-    #[inline]
-    fn get_stable_id() -> StableId<'static> {
-        StableId {
-            crate_name: Self::CRATE_NAME,
-            version: Self::VERSION,
-            name: Self::NAME,
-        }
+        write!(f, "OwnedStableId(\"{}::{}\")", self.crate_name, self.name)
     }
 }
 

@@ -1,5 +1,4 @@
-use bevy_reflect::Typed;
-use common::ScheduleLabel;
+use bevy_reflect::{TypeInfo, Typed};
 
 use crate::ecs::{system::IntoSystemConfigs, Resource};
 
@@ -35,20 +34,20 @@ impl Mod {
     {
         self.schema
             .resources
-            .push((R::get_stable_id, R::default_value_as_buffer));
+            .push((R::type_info, R::default_value_as_buffer));
         self
     }
 
     pub const fn add_systems<Marker>(
         &mut self,
-        schedule: impl ~const ScheduleLabel,
+        schedule: impl Typed + Copy,
         systems: impl ~const IntoSystemConfigs<Marker>,
     ) -> &mut Self {
-        const fn schedule_id_getter_from_value<T>(_schedule: T) -> fn() -> common::StableId<'static>
+        const fn schedule_id_getter_from_value<T>(_schedule: T) -> fn() -> &'static TypeInfo
         where
-            T: ScheduleLabel,
+            T: Typed + Copy,
         {
-            T::get_stable_id
+            T::type_info
         }
         let getter = schedule_id_getter_from_value(schedule);
         let system_configs = IntoSystemConfigs::into_configs(systems);
@@ -63,7 +62,7 @@ mod tests {
     use super::*;
     use bevy_reflect::Reflect;
     use bitcode::Encode;
-    use common::{HasStableId, Start, Update};
+    use common::{StableId, Start, Update};
 
     #[test]
     fn name() {
@@ -73,18 +72,13 @@ mod tests {
 
     #[test]
     fn add_resource() {
-        #[derive(Debug, Reflect, Encode)]
+        #[derive(Reflect, Encode, Debug)]
         struct TestResource(u32);
+
         impl Default for TestResource {
             fn default() -> Self {
                 Self(123)
             }
-        }
-        impl Resource for TestResource {}
-        impl HasStableId for TestResource {
-            const CRATE_NAME: &'static str = "";
-            const VERSION: &'static str = "";
-            const NAME: &'static str = "TestResource";
         }
 
         const SCHEMA: Schema = Mod::new("Test add_resource")
@@ -100,7 +94,7 @@ mod tests {
 
         assert_eq!(resources.len(), 1);
         let (stable_id, default_value) = resources[0];
-        assert_eq!(stable_id().name, "TestResource");
+        assert_eq!(stable_id().type_path_table().short_path(), "TestResource");
         assert_eq!(default_value(), vec![4, 123]);
     }
 
@@ -125,7 +119,7 @@ mod tests {
         fn system2() {}
         fn system3() {}
 
-        const SCHEMA: Schema = Mod::new("Test register_type")
+        const SCHEMA: Schema = Mod::new("Test add_systems")
             .add_systems(Start, system1)
             .add_systems(Update, (system1, system3).chain())
             .into_schema();
@@ -138,9 +132,15 @@ mod tests {
         assert_eq!(types.len(), 0);
 
         assert_eq!(schedules.len(), 2);
-        assert_eq!(schedules[0].0(), Start::get_stable_id());
+        assert_eq!(
+            StableId::from_type_info(schedules[0].0()),
+            StableId::from_typed::<Start>()
+        );
         assert_eq!(schedules[0].1.into_schedule().systems.len(), 1);
-        assert_eq!(schedules[1].0(), Update::get_stable_id());
+        assert_eq!(
+            StableId::from_type_info(schedules[1].0()),
+            StableId::from_typed::<Update>()
+        );
         assert_eq!(schedules[1].1.into_schedule().systems.len(), 2);
     }
 }

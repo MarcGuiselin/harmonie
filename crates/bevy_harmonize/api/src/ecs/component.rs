@@ -1,10 +1,13 @@
+use bevy_reflect::Typed;
+
 /// Similar to bevy's Component
 pub trait Component
 where
-    Self: common::HasStableId + bitcode::Encode + Decode,
+    Self: Typed + bitcode::Encode + Decode,
 {
-    fn get_local_component_id() -> u32;
 }
+
+impl<C> Component for C where C: Typed + bitcode::Encode + Decode {}
 
 pub trait Decode
 where

@@ -12,7 +12,13 @@ pub mod schema;
 pub(crate) mod utils;
 
 pub mod prelude {
-    pub use crate::ecs::{system::Commands, Component};
+    pub use bevy_reflect::prelude::*;
+    pub use bevy_reflect_derive::*;
+    pub use bitcode::{Decode, Encode};
+
+    pub use crate::ecs::{system::Commands, Component, Resource};
     pub use crate::schema::{Mod, Schema};
-    pub use common::{HasStableId, Start, Update};
+
+    // Schedules
+    pub use common::{Start, Update};
 }

@@ -1,7 +1,7 @@
 use std::hash::{Hash, Hasher};
 
 use bevy_utils::{HashMap, HashSet};
-use common::{HasStableId, Start, Update};
+use common::{OwnedStableId, Start, Update};
 use petgraph::{algo::TarjanScc, prelude::*};
 
 use super::LoadingError;
@@ -21,8 +21,8 @@ impl LoadedSchedules {
         let mut schedules = HashMap::default();
 
         // Allow only the default schedules for now
-        schedules.insert(Start::get_stable_id().to_owned(), Vec::new());
-        schedules.insert(Update::get_stable_id().to_owned(), Vec::new());
+        schedules.insert(OwnedStableId::from_typed::<Start>(), Vec::new());
+        schedules.insert(OwnedStableId::from_typed::<Update>(), Vec::new());
 
         // Group together schedules with the same schedule id
         for descriptor in descriptors {

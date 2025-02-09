@@ -23,9 +23,8 @@ impl SystemParam for Commands {
 
 /// Similar to bevy_ecs::system::commands::Commands
 impl Commands {
-    #[cfg(feature = "wasm_runtime")]
     pub fn spawn_empty(&mut self) -> EntityCommands {
-        #[link(wasm_import_module = "harmonie_mod")]
+        #[link(wasm_import_module = "bevy_harmonize")]
         extern "C" {
             fn command_spawn_empty() -> u32;
         }
@@ -33,44 +32,37 @@ impl Commands {
         let id = unsafe { command_spawn_empty() };
         EntityCommands(id)
     }
-
-    #[cfg(not(feature = "wasm_runtime"))]
-    pub fn spawn_empty(&mut self) -> EntityCommands {
-        unreachable!()
-    }
 }
 
 pub struct EntityCommands(u32);
 
 impl EntityCommands {
     // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
-    #[cfg(feature = "wasm_runtime")]
-    pub fn insert_component<T: Component>(&mut self, component: T) -> &mut Self {
-        #[link(wasm_import_module = "harmonie_mod")]
+    pub fn insert_component(&mut self, component: impl Component) -> &mut Self {
+        #[link(wasm_import_module = "bevy_harmonize")]
         extern "C" {
             fn entity_insert_component(
                 entity_id: u32,
-                local_component_id: u32,
-                component_buffer_ptr: u32,
-                component_buffer_len: u32,
+                type_short_name_ptr: u32,
+                type_crate_name_ptr: u32,
+                buffer_ptr: u32,
+                buffer_len: u32,
             );
         }
 
+        let type_short_name = component.reflect_short_type_path();
+        let crate_name = component.reflect_crate_name().unwrap_or("unknown");
         let component_buffer = bitcode::encode(&component);
         unsafe {
             entity_insert_component(
                 self.0,
-                <T as Component>::get_local_component_id(),
+                type_short_name.as_ptr() as _,
+                crate_name.as_ptr() as _,
                 component_buffer.as_ptr() as _,
                 component_buffer.len() as _,
             );
         }
         self
-    }
-
-    #[cfg(not(feature = "wasm_runtime"))]
-    pub fn insert_component<T: Component>(&mut self, _: T) -> &mut Self {
-        unreachable!()
     }
 
     pub fn id(&self) -> Entity {

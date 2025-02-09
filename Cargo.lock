@@ -853,6 +853,7 @@ version = "0.0.0"
 dependencies = [
  "bevy_harmonize_common",
  "bevy_reflect",
+ "bevy_reflect_derive",
  "bevy_utils_proc_macros",
  "bitcode",
  "const_panic",
@@ -883,6 +884,8 @@ dependencies = [
 name = "bevy_harmonize_common"
 version = "0.0.0"
 dependencies = [
+ "bevy_reflect",
+ "bevy_reflect_derive",
  "bitcode",
 ]
 

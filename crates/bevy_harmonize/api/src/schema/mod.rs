@@ -1,7 +1,6 @@
 use const_vec::ConstVec;
 
 use bevy_reflect::TypeInfo;
-use common::StableIdGetter;
 
 mod a_mod;
 pub use a_mod::Mod;
@@ -12,8 +11,8 @@ use crate::ecs::system::SystemConfigs;
 pub struct Schema {
     pub(crate) name: Option<&'static str>,
     pub(crate) types: ConstVec<fn() -> &'static TypeInfo, 1024>,
-    pub(crate) resources: ConstVec<(StableIdGetter, fn() -> Vec<u8>), 128>,
-    pub(crate) schedules: ConstVec<(StableIdGetter, SystemConfigs), 128>,
+    pub(crate) resources: ConstVec<(fn() -> &'static TypeInfo, fn() -> Vec<u8>), 128>,
+    pub(crate) schedules: ConstVec<(fn() -> &'static TypeInfo, SystemConfigs), 128>,
 }
 
 impl Schema {
