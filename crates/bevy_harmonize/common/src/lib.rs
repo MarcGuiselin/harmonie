@@ -6,7 +6,7 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
-use bevy_reflect::{TypeInfo, Typed};
+use bevy_reflect::{TypeInfo, TypePathTable, Typed};
 use bitcode::{Decode, Encode};
 
 mod schedule;
@@ -14,6 +14,9 @@ pub use schedule::*;
 
 mod identifiers;
 pub use identifiers::*;
+
+mod type_signature;
+pub use type_signature::*;
 
 mod utils;
 pub use utils::*;
@@ -35,9 +38,12 @@ impl<'a> StableId<'a> {
     }
 
     pub fn from_type_info(type_info: &TypeInfo) -> StableId<'static> {
-        let path = type_info.type_path_table();
+        Self::from_type_path_table(type_info.type_path_table())
+    }
+
+    pub fn from_type_path_table(path: &TypePathTable) -> StableId<'static> {
         let crate_name = path.crate_name().unwrap_or("unknown");
-        let name = type_info.type_path_table().short_path();
+        let name = path.short_path();
         StableId { crate_name, name }
     }
 }
@@ -142,6 +148,7 @@ pub struct FeatureDescriptor<'a> {
 #[derive(Encode, Decode, PartialEq, Debug)]
 pub struct ModManifest<'a> {
     pub wasm_hash: FileHash,
+    pub types: Vec<TypeSignature<'a>>,
     pub features: Vec<FeatureDescriptor<'a>>,
 }
 

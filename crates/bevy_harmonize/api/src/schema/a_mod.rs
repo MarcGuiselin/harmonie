@@ -89,7 +89,7 @@ mod tests {
             types, resources, ..
         } = SCHEMA;
 
-        // TODO: test registering type
+        // No type should be added. The resource will be registered when converting the schema to a manifest
         assert_eq!(types.len(), 0);
 
         assert_eq!(resources.len(), 1);

@@ -11,6 +11,9 @@ compile_error!(
     "Features \"generate_manifest\" and \"wasm_runtime\" cannot be enabled at the same time"
 );
 
+#[path = "internal/mod.rs"]
+pub mod __internal;
+
 pub mod ecs;
 pub mod schema;
 pub(crate) mod utils;
