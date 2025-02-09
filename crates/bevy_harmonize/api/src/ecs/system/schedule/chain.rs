@@ -7,11 +7,17 @@ use super::IntoSchedule;
 #[derive(Clone, Copy)]
 pub struct Chained<Marker, T>(PhantomData<(Marker, T)>);
 
-impl<Marker, T> Chained<Marker, T> {
-    #[inline]
-    pub(crate) const fn new() -> Self {
-        Self(PhantomData)
+#[inline]
+#[track_caller]
+pub(crate) const fn new<Marker, T>() -> Chained<Marker, T>
+where
+    T: IntoSchedule<Marker>,
+{
+    if !T::IS_CHAINABLE {
+        panic!("It is not possible to chain these systems")
     }
+
+    Chained(PhantomData)
 }
 
 impl<Marker, T> IntoSchedule<()> for Chained<Marker, T>

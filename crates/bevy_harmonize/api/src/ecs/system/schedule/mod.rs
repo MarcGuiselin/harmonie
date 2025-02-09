@@ -7,6 +7,8 @@ pub trait IntoSchedule<Marker>
 where
     Self: Sized,
 {
+    const IS_CHAINABLE: bool = false;
+
     fn into_configs() -> Schedule<'static>;
 }
 
@@ -19,10 +21,11 @@ pub use chain::Chained;
 #[const_trait]
 pub trait ConstrainSchedule<Marker>
 where
-    Self: Sized + Copy,
+    Self: IntoSchedule<Marker> + Copy,
 {
+    #[track_caller]
     fn chain(self) -> Chained<Marker, Self> {
-        Chained::new()
+        chain::new()
     }
 }
 
@@ -55,6 +58,8 @@ macro_rules! impl_system_collection {
         where
             $($sys: IntoSchedule<$param> + Copy),*
         {
+            const IS_CHAINABLE: bool = true;
+
             #[allow(non_snake_case)]
             fn into_configs() -> Schedule<'static> {
                 let mut systems = Vec::new();
