@@ -1,6 +1,3 @@
-#![allow(dead_code)] // TODO: remove
-#![feature(const_type_id)]
-#![feature(const_type_name)]
 // Nightly has a weird issue when testing and enabling const_trait_impl via RUSTFLAGS
 // It produces an error saying the feature const_trait_impl is not enabled, but when enabled warns that it is already enabled (due to RUSTFLAGS)
 // Thus, to run tests it is necessary to set RUSTFLAGS="" and use the feature "test"
@@ -16,7 +13,6 @@ pub mod __internal;
 
 pub mod ecs;
 pub mod schema;
-pub(crate) mod utils;
 
 pub mod prelude {
     pub use bevy_reflect::prelude::*;

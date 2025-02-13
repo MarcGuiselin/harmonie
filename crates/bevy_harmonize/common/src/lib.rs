@@ -1,5 +1,3 @@
-#![feature(const_type_name)]
-
 use std::{
     any::TypeId,
     fmt,
