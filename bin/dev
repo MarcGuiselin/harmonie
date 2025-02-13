@@ -2,4 +2,4 @@
 
 # Run a development environment
 
-cargo run -p harmonie_client
+cargo run -p test_client

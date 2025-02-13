@@ -2,4 +2,4 @@
 
 # Cleans the codegen directory used by bevy_harmonize_build to build mods
 
-find ./crates/bevy_harmonize/build/codegen/crates -mindepth 1 -type d -name "empty" -prune -o -type d -exec rm -rf {} +
+find ./codegen/crates -mindepth 1 -type d -name "empty" -prune -o -type d -exec rm -rf {} +

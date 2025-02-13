@@ -18,9 +18,9 @@ use command::CargoCommand;
 mod fs_utils;
 
 const TARGET_DIR: &str = "target";
-const BUILD_DIR: &str = "harmonie-build";
+const BUILD_DIR: &str = "bevy-harmonize-build";
 const TEMP_DIR: &str = "temp";
-const CODEGEN_DIR: &str = "crates/bevy_harmonize/build/codegen/crates";
+const CODEGEN_DIR: &str = "codegen/crates";
 const WASM_TARGET: &str = "wasm32-unknown-unknown";
 
 pub async fn build<E>(

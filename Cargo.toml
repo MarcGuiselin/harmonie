@@ -1,12 +1,31 @@
+[package]
+name = "bevy_harmonize"
+description = "A familiar, yet powerful take on a modding system for the Bevy game engine"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+common = { package = "bevy_harmonize_common", path = "crates/common" }
+bevy_harmonize_build = { path = "crates/build" }
+
+async-channel.workspace = true
+async-fs.workspace = true
+bevy_app.workspace = true
+bevy_ecs.workspace = true
+bevy_ecs_macros.workspace = true
+bevy_tasks.workspace = true
+bevy_utils.workspace = true
+bitcode.workspace = true
+futures-lite.workspace = true
+notify.workspace = true
+petgraph.workspace = true
+rancor.workspace = true
+sha2.workspace = true
+wasmer.workspace = true
+
 [workspace]
 resolver = "2"
-members = [
-    "crates/*",
-    "crates/bevy_harmonize/api",
-    "crates/bevy_harmonize/build",
-    "crates/bevy_harmonize/build/codegen/crates/*",
-    "crates/bevy_harmonize/common",
-]
+members = ["crates/*", "codegen/crates/*"]
 
 [workspace.dependencies]
 bitcode = { version = "0", features = ["derive"] }

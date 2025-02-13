@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 common = { package = "bevy_harmonize_common", path = "../common" }
-const_vec = { package = "const_vec", path = "../../const_vec" }
+const_vec = { package = "const_vec", path = "../const_vec" }
 
 bitcode.workspace = true
 bevy_reflect.workspace = true
