@@ -240,10 +240,15 @@ where
     let wasm_bytes = fs_utils::read(&wasm_path).await?;
     let wasm_hash = common::FileHash::from_sha256(Sha256::digest(&wasm_bytes).into());
 
-    let old_manifest: common::ModManifest<'_> = bitcode::decode(&encoded_manifest).unwrap();
+    let common::ModManifest {
+        wasm_hash: _,
+        types,
+        features,
+    } = bitcode::decode(&encoded_manifest).unwrap();
     let manifest = common::ModManifest {
         wasm_hash,
-        features: old_manifest.features,
+        types,
+        features,
     };
 
     let as_string = format!("{:#?}", manifest);
