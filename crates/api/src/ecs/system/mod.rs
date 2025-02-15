@@ -3,6 +3,7 @@ mod params;
 mod schedule;
 mod system;
 mod system_param;
+mod system_set;
 
 use std::any::TypeId;
 
@@ -11,6 +12,7 @@ pub use params::*;
 pub use schedule::{ConstrainSchedule, IntoSchedule};
 pub use system::{BoxedSystem, ConstParams, System};
 pub use system_param::SystemParam;
+pub use system_set::IntoSystemSet;
 
 #[diagnostic::on_unimplemented(
     message = "`{Self}` is not a valid system with input `{In}` and output `{Out}`",
