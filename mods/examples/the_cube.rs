@@ -15,7 +15,7 @@ fn start(
 ) {
     let entity = commands
         .spawn_empty()
-        //.insert_component(Transform)
+        .insert_component(Transform::from_translation(Vec3::ZERO))
         .insert_component(Cube)
         .id();
     println!("Summoned a new entity {:?} with ", entity);

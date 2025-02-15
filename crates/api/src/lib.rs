@@ -28,4 +28,8 @@ pub mod prelude {
 
     // Schedules
     pub use common::{Start, Update};
+
+    // Native bevy types
+    pub use bevy_math::prelude::*;
+    pub use bevy_transform::components::*;
 }

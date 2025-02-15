@@ -8,8 +8,10 @@ common = { package = "bevy_harmonize_common", path = "../common" }
 const_vec = { package = "const_vec", path = "../const_vec" }
 
 bitcode = { workspace = true, features = ["serde"] }
+bevy_math.workspace = true
 bevy_reflect.workspace = true
 bevy_reflect_derive.workspace = true
+bevy_transform.workspace = true
 bevy_utils_proc_macros.workspace = true
 const_panic.workspace = true
 
