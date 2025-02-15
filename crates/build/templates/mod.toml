@@ -14,7 +14,7 @@ crate-type = ["cdylib"]
 path = "{{source_file}}"
 
 [dependencies]
-api = { package = "bevy_harmonize_api", path = "../../../../api" }
+api = { package = "bevy_harmonize_api", path = "../../../crates/api" }
 bevy_reflect.workspace = true
 bitcode.workspace = true
 
