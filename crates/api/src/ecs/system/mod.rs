@@ -9,7 +9,7 @@ use std::any::TypeId;
 
 pub use function_system::FunctionSystem;
 pub use params::*;
-pub use schedule::{ConstrainSchedule, IntoSchedule};
+pub use schedule::{IntoSchedule, Schedule};
 pub use system::{BoxedSystem, ConstParams, System};
 pub use system_param::SystemParam;
 pub use system_set::IntoSystemSet;

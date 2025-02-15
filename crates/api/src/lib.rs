@@ -20,7 +20,7 @@ pub mod prelude {
     pub use bitcode::{Decode, Encode};
 
     pub use crate::ecs::{
-        system::{Commands, ConstrainSchedule, IntoSchedule},
+        system::{Commands, IntoSchedule, IntoSystemSet},
         Component, Resource,
     };
     pub use crate::schema::{Mod, Schema};

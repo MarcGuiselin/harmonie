@@ -42,7 +42,7 @@ pub struct System<'a> {
     pub params: Vec<Param<'a>>,
 }
 
-#[derive(Encode, Decode, PartialEq, Debug)]
+#[derive(Encode, Decode, PartialEq, Debug, Clone)]
 pub enum SystemSet<'a> {
     Anonymous(Vec<SystemId>),
     Named(StableId<'a>),

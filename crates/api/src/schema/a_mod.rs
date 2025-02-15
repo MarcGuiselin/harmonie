@@ -41,7 +41,7 @@ impl Mod {
     pub const fn add_systems<Marker>(
         &mut self,
         schedule: impl Typed + Copy,
-        systems: impl IntoSchedule<Marker> + Copy,
+        systems: impl ~const IntoSchedule<Marker>,
     ) -> &mut Self {
         const fn type_info<T>(_schedule: T) -> fn() -> &'static TypeInfo
         where
@@ -49,15 +49,9 @@ impl Mod {
         {
             T::type_info
         }
-        const fn into_schedule<T, Marker>(_systems: T) -> fn() -> common::Schedule<'static>
-        where
-            T: IntoSchedule<Marker> + Copy,
-        {
-            T::into_schedule
-        }
         let id_getter = type_info(schedule);
-        let system_configs = into_schedule(systems);
-        self.schema.schedules.push((id_getter, system_configs));
+        let schedule = systems.into_schedule();
+        self.schema.schedules.push((id_getter, schedule));
         self
     }
 }
@@ -66,7 +60,6 @@ impl Mod {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ecs::system::ConstrainSchedule;
     use bevy_reflect::Reflect;
     use bitcode::Encode;
     use common::{StableId, Start, Update};
@@ -146,7 +139,7 @@ mod tests {
         let common::Schedule {
             systems,
             constraints,
-        } = (schedules[0].1)();
+        } = schedules[0].1.build();
         assert_eq!(systems.len(), 1);
         assert_eq!(constraints.len(), 0);
 
@@ -157,7 +150,7 @@ mod tests {
         let common::Schedule {
             systems,
             constraints,
-        } = (schedules[1].1)();
+        } = schedules[1].1.build();
         assert_eq!(systems.len(), 2);
         assert_eq!(constraints.len(), 1);
     }

@@ -1,14 +1,56 @@
 use super::IntoSystem;
 use bevy_reflect::Typed;
 use bevy_utils_proc_macros::all_tuples;
-use common::*;
+use common::{StableId, System, SystemId};
 
 /// Similar in role to bevy's IntoSystemConfigs trait
 pub trait IntoSystemSet<Marker> {
-    fn into_system_set() -> SystemSet<'static>;
+    fn into_system_set() -> SystemSet;
 
-    fn into_systems_vec() -> Vec<System<'static>> {
-        Vec::new()
+    fn into_systems() -> Systems {
+        Systems(Vec::new())
+    }
+}
+
+pub struct SystemSet(Vec<Sys>);
+
+pub struct Systems(pub(crate) Vec<System<'static>>);
+
+#[derive(PartialEq, Debug)]
+enum Sys {
+    Anonymous(SystemId),
+    Named(StableId<'static>),
+}
+
+impl SystemSet {
+    /// Returns a list of system sets. All anonymous systems will be contained in a single set.
+    pub(crate) fn into_min_sets(self) -> Vec<common::SystemSet<'static>> {
+        let mut anonymous = Vec::new();
+        let mut sets = Vec::new();
+
+        for sys in self.0 {
+            match sys {
+                Sys::Anonymous(id) => anonymous.push(id),
+                Sys::Named(name) => sets.push(common::SystemSet::Named(name)),
+            }
+        }
+
+        if !anonymous.is_empty() {
+            sets.push(common::SystemSet::Anonymous(anonymous));
+        }
+
+        sets
+    }
+
+    /// Returns a list of system sets. Each anonymous system will have its own set
+    pub(crate) fn into_max_sets(self) -> Vec<common::SystemSet<'static>> {
+        self.0
+            .into_iter()
+            .map(|sys| match sys {
+                Sys::Anonymous(id) => common::SystemSet::Anonymous(vec![id]),
+                Sys::Named(name) => common::SystemSet::Named(name),
+            })
+            .collect()
     }
 }
 
@@ -21,12 +63,12 @@ impl<Marker, F> IntoSystemSet<(SystemMarker, Marker)> for F
 where
     F: 'static + IntoSystem<(), (), Marker> + Copy,
 {
-    fn into_system_set() -> SystemSet<'static> {
-        SystemSet::Anonymous(vec![SystemId::of::<F::System>()])
+    fn into_system_set() -> SystemSet {
+        SystemSet(vec![Sys::Anonymous(SystemId::of::<F::System>())])
     }
 
-    fn into_systems_vec() -> Vec<System<'static>> {
-        vec![F::into_metadata()]
+    fn into_systems() -> Systems {
+        Systems(vec![F::into_metadata()])
     }
 }
 
@@ -34,8 +76,8 @@ impl<T> IntoSystemSet<()> for T
 where
     T: Typed,
 {
-    fn into_system_set() -> SystemSet<'static> {
-        SystemSet::Named(StableId::from_typed::<T>())
+    fn into_system_set() -> SystemSet {
+        SystemSet(vec![Sys::Named(StableId::from_typed::<T>())])
     }
 }
 
@@ -50,29 +92,21 @@ macro_rules! impl_system_collection {
         where
             $($sys: IntoSystemSet<$param> + Copy),*
         {
-            fn into_system_set() -> SystemSet<'static> {
-                let mut anonymous_systems = Vec::new();
+            fn into_system_set() -> SystemSet {
+                let mut systems = Vec::new();
                 $(
-                    match $sys::into_system_set() {
-                        SystemSet::Anonymous(systems) => {
-                            anonymous_systems.extend(systems);
-                        }
-                        _ => {
-                            panic!("A system set must be Anonymous or Named, but not a mix of both. For example (anonymous_system, NamedSystemSet) is an invalid system set.");
-                        }
-                    };
+                    systems.extend($sys::into_system_set().0);
                 )*
-
-                SystemSet::Anonymous(anonymous_systems)
+                SystemSet(systems)
             }
 
             #[allow(non_snake_case)]
-            fn into_systems_vec() -> Vec<System<'static>> {
+            fn into_systems() -> Systems {
                 let mut systems = Vec::new();
                 $(
-                    systems.extend($sys::into_systems_vec());
+                    systems.extend($sys::into_systems().0);
                 )*
-                systems
+                Systems(systems)
             }
         }
     }
@@ -83,6 +117,7 @@ all_tuples!(impl_system_collection, 1, 20, P, S);
 #[cfg(test)]
 mod tests {
     use bevy_reflect::Reflect;
+    use common::Param;
 
     use super::*;
     use crate::prelude::Commands;
@@ -102,84 +137,70 @@ mod tests {
         }
     }
 
-    fn into_system_set<T, Marker>(_systems: T) -> SystemSet<'static>
+    fn into_system_sets<T, Marker>(_systems: T) -> Vec<Sys>
     where
         T: IntoSystemSet<Marker>,
     {
-        T::into_system_set()
+        T::into_system_set().0
     }
 
-    fn into_systems_vec<T, Marker>(_systems: T) -> Vec<System<'static>>
+    fn into_systems<T, Marker>(_systems: T) -> Vec<System<'static>>
     where
         T: IntoSystemSet<Marker>,
     {
-        T::into_systems_vec()
+        T::into_systems().0
     }
 
     #[test]
-    fn anonymous_system_into_system_set() {
+    fn anonymous_system_into_system_sets() {
         fn system(mut _commands: Commands) {}
         let system_set = system;
 
         assert_eq!(
-            into_system_set(system_set),
-            SystemSet::Anonymous(vec![get_system_id(system)])
+            into_system_sets(system_set),
+            vec![Sys::Anonymous(get_system_id(system))]
         );
         assert_eq!(
-            into_systems_vec(system_set),
+            into_systems(system_set),
             vec![make_system(system, vec![Param::Command])]
         );
     }
 
     #[test]
-    fn named_into_system_set() {
+    fn named_into_system_sets() {
         #[derive(Reflect, Clone, Copy)]
         struct NamedSet;
         let system_set = NamedSet;
 
         assert_eq!(
-            into_system_set(system_set),
-            SystemSet::Named(StableId::from_typed::<NamedSet>())
+            into_system_sets(system_set),
+            vec![Sys::Named(StableId::from_typed::<NamedSet>())]
         );
-        assert_eq!(into_systems_vec(system_set), Vec::new());
+        assert_eq!(into_systems(system_set), Vec::new());
     }
 
     #[test]
-    fn system_tuple_into_system_set() {
+    fn system_tuple_into_system_sets() {
         fn system1() {}
         fn system2(mut _commands: Commands) {}
-        let system_set = (system1, system2);
+        #[derive(Reflect, Clone, Copy)]
+        struct NamedSet;
+        let system_set = (system1, system2, NamedSet);
 
         assert_eq!(
-            into_system_set(system_set),
-            SystemSet::Anonymous(vec![get_system_id(system1), get_system_id(system2),])
+            into_system_sets(system_set),
+            vec![
+                Sys::Anonymous(get_system_id(system1)),
+                Sys::Anonymous(get_system_id(system2)),
+                Sys::Named(StableId::from_typed::<NamedSet>()),
+            ]
         );
         assert_eq!(
-            into_systems_vec(system_set),
+            into_systems(system_set),
             vec![
                 make_system(system1, vec![]),
                 make_system(system2, vec![Param::Command]),
             ]
-        );
-    }
-
-    #[test]
-    fn invalid_system_set() {
-        fn anonymous_system() {}
-        #[derive(Reflect, Clone, Copy)]
-        struct NamedSet;
-        let system_set = (anonymous_system, NamedSet);
-
-        // This is not a valid system set
-        let result = std::panic::catch_unwind(|| {
-            let _ = into_system_set(system_set);
-        });
-        assert!(result.is_err());
-
-        // But it is a valid array of systems
-        assert_eq!(
-            into_systems_vec(system_set),
-            vec![make_system(anonymous_system, vec![])]
         );
     }
 }

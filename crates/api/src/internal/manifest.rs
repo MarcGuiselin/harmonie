@@ -27,7 +27,7 @@ pub fn schema_to_manifest(schema: Schema) -> ModManifest<'static> {
 
     // Combine schedules with the same label together
     let mut schedules: HashMap<TypeId, ScheduleDescriptor<'_>> = HashMap::new();
-    for (type_info_getter, schedule_getter) in schema.schedules.into_slice() {
+    for (type_info_getter, schedule) in schema.schedules.into_slice() {
         let type_info = (type_info_getter)();
         types.register_type(type_info);
 
@@ -38,7 +38,7 @@ pub fn schema_to_manifest(schema: Schema) -> ModManifest<'static> {
                 let common::Schedule {
                     systems,
                     constraints,
-                } = schedule_getter();
+                } = schedule.build();
 
                 // TODO: dedupe systems and constraints
                 descriptor.schedule.systems.extend(systems);
@@ -46,7 +46,7 @@ pub fn schema_to_manifest(schema: Schema) -> ModManifest<'static> {
             })
             .or_insert(ScheduleDescriptor {
                 id,
-                schedule: schedule_getter(),
+                schedule: schedule.build(),
             });
     }
     let schedules = schedules.into_values().collect();
