@@ -1,6 +1,9 @@
-use crate::ecs::{
-    system::{system_param::Params, SystemParam},
-    Component,
+use crate::{
+    ecs::{
+        system::{system_param::Params, SystemParam},
+        Reflected,
+    },
+    runtime::serialize,
 };
 
 pub struct Commands;
@@ -38,13 +41,15 @@ pub struct EntityCommands(u32);
 
 impl EntityCommands {
     // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
-    pub fn insert_component(&mut self, component: impl Component) -> &mut Self {
+    pub fn insert_component(&mut self, component: impl Reflected) -> &mut Self {
         #[link(wasm_import_module = "bevy_harmonize")]
         extern "C" {
             fn entity_insert_component(
                 entity_id: u32,
                 type_short_name_ptr: u32,
+                type_short_name_len: u32,
                 type_crate_name_ptr: u32,
+                type_crate_name_len: u32,
                 buffer_ptr: u32,
                 buffer_len: u32,
             );
@@ -52,12 +57,16 @@ impl EntityCommands {
 
         let type_short_name = component.reflect_short_type_path();
         let crate_name = component.reflect_crate_name().unwrap_or("unknown");
-        let component_buffer = bitcode::encode(&component);
+
+        let component_buffer = serialize(&component);
+
         unsafe {
             entity_insert_component(
                 self.0,
                 type_short_name.as_ptr() as _,
+                type_short_name.len() as _,
                 crate_name.as_ptr() as _,
+                crate_name.len() as _,
                 component_buffer.as_ptr() as _,
                 component_buffer.len() as _,
             );

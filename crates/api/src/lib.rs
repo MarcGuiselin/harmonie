@@ -12,6 +12,7 @@ compile_error!(
 pub mod __internal;
 
 pub mod ecs;
+pub mod runtime;
 pub mod schema;
 
 pub mod prelude {
@@ -21,7 +22,7 @@ pub mod prelude {
 
     pub use crate::ecs::{
         system::{Commands, IntoSchedule, IntoSystemSet},
-        Component, Reflected, Resource,
+        Reflected, Resource,
     };
     pub use crate::schema::{Mod, Schema};
 

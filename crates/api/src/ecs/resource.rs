@@ -1,5 +1,4 @@
-use bevy_reflect::Typed;
-use bitcode::Encode;
+use bevy_reflect::{serde::TypedReflectSerializer, GetTypeRegistration, TypeRegistry, Typed};
 
 pub trait Resource
 where
@@ -10,9 +9,15 @@ where
 
 impl<R> Resource for R
 where
-    R: Typed + Encode + Default,
+    R: Typed + GetTypeRegistration + Default,
 {
     fn default_value_as_buffer() -> Vec<u8> {
-        bitcode::encode(&Self::default())
+        let mut registry = TypeRegistry::default();
+        registry.register::<R>();
+
+        let default = Self::default();
+        let serializer = TypedReflectSerializer::new(&default, &registry);
+
+        bitcode::serialize(&serializer).unwrap()
     }
 }

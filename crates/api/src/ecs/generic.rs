@@ -2,6 +2,7 @@ use bevy_reflect::Typed;
 
 /// A generic trait to mark types that can be used as any of the following:
 ///
+/// - Components
 /// - Named system set (SystemSet in bevy)
 /// - Schedule label (ScheduleLabel in bevy)
 ///
