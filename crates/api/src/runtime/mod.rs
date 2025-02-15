@@ -1,5 +1,8 @@
 use bevy_reflect::{serde::TypedReflectSerializer, PartialReflect, TypeRegistry};
 
+mod ffi;
+pub(crate) use ffi::*;
+
 static RUNTIME: Option<Runtime> = None;
 
 struct Runtime {
