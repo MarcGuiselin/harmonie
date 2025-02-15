@@ -21,7 +21,7 @@ pub mod prelude {
 
     pub use crate::ecs::{
         system::{Commands, IntoSchedule, IntoSystemSet},
-        Component, Resource,
+        Component, Reflected, Resource,
     };
     pub use crate::schema::{Mod, Schema};
 

@@ -67,7 +67,7 @@ mod tests {
 
     fn into_metadata<T, Marker>(_system: T) -> common::System<'static>
     where
-        T: IntoSystem<(), (), Marker> + Copy,
+        T: IntoSystem<(), (), Marker>,
     {
         T::into_metadata()
     }

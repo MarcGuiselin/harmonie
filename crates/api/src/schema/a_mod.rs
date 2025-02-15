@@ -1,6 +1,6 @@
 use bevy_reflect::{TypeInfo, Typed};
 
-use crate::ecs::{system::IntoSchedule, Resource};
+use crate::ecs::{system::IntoSchedule, Reflected, Resource};
 
 use super::Schema;
 
@@ -40,12 +40,12 @@ impl Mod {
 
     pub const fn add_systems<Marker>(
         &mut self,
-        schedule: impl Typed + Copy,
+        schedule: impl Reflected,
         systems: impl ~const IntoSchedule<Marker>,
     ) -> &mut Self {
         const fn type_info<T>(_schedule: T) -> fn() -> &'static TypeInfo
         where
-            T: Typed + Copy,
+            T: Reflected,
         {
             T::type_info
         }

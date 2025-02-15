@@ -1,10 +1,14 @@
+use crate::ecs::Reflected;
+
 use super::IntoSystem;
-use bevy_reflect::Typed;
 use bevy_utils_proc_macros::all_tuples;
 use common::{StableId, System, SystemId};
 
 /// Similar in role to bevy's IntoSystemConfigs trait
-pub trait IntoSystemSet<Marker> {
+pub trait IntoSystemSet<Marker>
+where
+    Self: Copy,
+{
     fn into_system_set() -> SystemSet;
 
     fn into_systems() -> Systems {
@@ -61,7 +65,7 @@ pub struct SystemMarker;
 // Implement for anonymous functions
 impl<Marker, F> IntoSystemSet<(SystemMarker, Marker)> for F
 where
-    F: 'static + IntoSystem<(), (), Marker> + Copy,
+    F: IntoSystem<(), (), Marker> + Copy,
 {
     fn into_system_set() -> SystemSet {
         SystemSet(vec![Sys::Anonymous(SystemId::of::<F::System>())])
@@ -74,7 +78,7 @@ where
 
 impl<T> IntoSystemSet<()> for T
 where
-    T: Typed,
+    T: Reflected,
 {
     fn into_system_set() -> SystemSet {
         SystemSet(vec![Sys::Named(StableId::from_typed::<T>())])

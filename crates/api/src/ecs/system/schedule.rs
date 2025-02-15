@@ -1,8 +1,9 @@
+use crate::ecs::Reflected;
+
 use super::{
     system_set::{SystemSet, Systems},
     IntoSystemSet,
 };
-use bevy_reflect::Typed;
 use common::StableId;
 use const_vec::ConstVec;
 
@@ -20,7 +21,7 @@ where
         schedule
     }
 
-    fn before<Marker>(self, system_set: impl IntoSystemSet<Marker> + Copy) -> Schedule {
+    fn before<Marker>(self, system_set: impl IntoSystemSet<Marker>) -> Schedule {
         let mut schedule = self.into_schedule();
         schedule
             .constraints
@@ -28,7 +29,7 @@ where
         schedule
     }
 
-    fn after<Marker>(self, system_set: impl IntoSystemSet<Marker> + Copy) -> Schedule {
+    fn after<Marker>(self, system_set: impl IntoSystemSet<Marker>) -> Schedule {
         let mut schedule = self.into_schedule();
         schedule
             .constraints
@@ -36,7 +37,7 @@ where
         schedule
     }
 
-    fn in_set(self, named_system_set: impl Typed + Copy) -> Schedule {
+    fn in_set(self, named_system_set: impl Reflected) -> Schedule {
         let mut schedule = self.into_schedule();
         schedule
             .constraints
@@ -127,7 +128,7 @@ enum Constraint {
 #[inline]
 const fn system_set_getter<T, Marker>(_systems: T) -> fn() -> SystemSet
 where
-    T: IntoSystemSet<Marker> + Copy,
+    T: IntoSystemSet<Marker>,
 {
     T::into_system_set
 }
@@ -135,7 +136,7 @@ where
 #[inline]
 const fn stable_id_getter<T>(_typed: T) -> fn() -> StableId<'static>
 where
-    T: Typed + Copy,
+    T: Reflected,
 {
     StableId::from_typed::<T>
 }
@@ -146,7 +147,7 @@ pub struct FunctionMarker;
 
 impl<Marker, F> const IntoSchedule<(FunctionMarker, Marker)> for F
 where
-    F: IntoSystemSet<Marker> + Copy,
+    F: IntoSystemSet<Marker>,
 {
     fn into_schedule(self) -> Schedule {
         Schedule {
@@ -177,7 +178,7 @@ mod tests {
 
     fn get_named_system_set<T>() -> common::SystemSet<'static>
     where
-        T: Typed,
+        T: Reflected,
     {
         common::SystemSet::Named(StableId::from_typed::<T>())
     }
