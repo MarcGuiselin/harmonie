@@ -61,7 +61,6 @@ impl Mod {
 mod tests {
     use super::*;
     use bevy_reflect::Reflect;
-    use bitcode::Encode;
     use common::{StableId, Start, Update};
 
     #[test]
@@ -72,7 +71,7 @@ mod tests {
 
     #[test]
     fn add_resource() {
-        #[derive(Reflect, Encode, Debug)]
+        #[derive(Reflect, Debug)]
         struct TestResource(u32);
 
         impl Default for TestResource {

@@ -66,7 +66,6 @@ pub fn schema_to_manifest(schema: Schema) -> ModManifest<'static> {
 #[cfg(test)]
 mod tests {
     use bevy_reflect::Reflect;
-    use bitcode::{Decode, Encode};
     use common::{
         FieldSignature, Param, Schedule, Start, System, SystemId, TypeSignature, VariantSignature,
     };
@@ -88,7 +87,7 @@ mod tests {
 
     #[test]
     fn manifest_from_schema() {
-        #[derive(Reflect, Encode, Decode)]
+        #[derive(Reflect)]
         struct MyStruct {
             foo: u32,
             bar: MyEnum,
@@ -103,7 +102,7 @@ mod tests {
             }
         }
 
-        #[derive(Reflect, Encode, Decode)]
+        #[derive(Reflect)]
         enum MyEnum {
             Left,
             Middle(u32),

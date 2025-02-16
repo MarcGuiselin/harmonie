@@ -18,7 +18,6 @@ pub mod schema;
 pub mod prelude {
     pub use bevy_reflect::prelude::*;
     pub use bevy_reflect_derive::*;
-    pub use bitcode::{Decode, Encode};
 
     pub use crate::ecs::{
         system::{Commands, IntoSchedule, IntoSystemSet},
