@@ -4,7 +4,7 @@ use std::{
     hash::{DefaultHasher, Hash, Hasher},
 };
 
-use bevy_reflect::{TypeInfo, TypePathTable, Typed};
+use bevy_reflect::{DynamicTypePath, TypeInfo, TypePathTable, Typed};
 use bitcode::{Decode, Encode};
 
 mod schedule;
@@ -33,6 +33,12 @@ impl<'a> StableId<'a> {
         T: Typed,
     {
         Self::from_type_info(T::type_info())
+    }
+
+    pub fn from_dynamic<'d>(dynamic: &'d impl DynamicTypePath) -> StableId<'d> {
+        let crate_name = dynamic.reflect_crate_name().unwrap_or("unknown");
+        let name = dynamic.reflect_short_type_path();
+        StableId { crate_name, name }
     }
 
     pub fn from_type_info(type_info: &TypeInfo) -> StableId<'static> {
