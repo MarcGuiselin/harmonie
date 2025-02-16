@@ -123,15 +123,18 @@ impl fmt::Debug for SystemId {
 #[derive(Encode, Decode, PartialEq, Eq, Debug, Clone, Hash, Copy)]
 pub enum Param<'a> {
     Command,
-    Res(StableId<'a>),
-    // TODO: Query, Res, etc
+    Res { mutable: bool, id: StableId<'a> },
+    // TODO: Query, etc
 }
 
 impl Param<'_> {
     pub fn to_owned(&self) -> OwnedParam {
         match self {
             Param::Command => OwnedParam::Command,
-            Param::Res(stable_id) => OwnedParam::Res(stable_id.to_owned()),
+            Param::Res { mutable, id } => OwnedParam::Res {
+                mutable: *mutable,
+                id: id.to_owned(),
+            },
         }
     }
 }
@@ -139,7 +142,7 @@ impl Param<'_> {
 #[derive(PartialEq, Eq, Debug, Clone, Hash)]
 pub enum OwnedParam {
     Command,
-    Res(OwnedStableId),
+    Res { mutable: bool, id: OwnedStableId },
 }
 
 #[derive(Encode, Decode, PartialEq, Debug)]

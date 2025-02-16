@@ -1,10 +1,10 @@
-use bevy_reflect::{PartialReflect, Typed};
+use bevy_reflect::{FromReflect, GetTypeRegistration, Typed};
 
 use crate::runtime::serialize;
 
 pub trait Resource
 where
-    Self: Sized + Typed + PartialReflect,
+    Self: Sized + Typed + FromReflect + GetTypeRegistration,
 {
     fn default_value() -> Self;
 
@@ -16,7 +16,7 @@ where
 
 impl<R> Resource for R
 where
-    R: Sized + Typed + PartialReflect + Default,
+    R: Sized + Typed + FromReflect + GetTypeRegistration + Default,
 {
     fn default_value() -> Self {
         Self::default()

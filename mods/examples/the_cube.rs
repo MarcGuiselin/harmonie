@@ -1,6 +1,7 @@
 use api::prelude::*;
 
 pub const SCHEMA: Schema = Mod::new("The cube")
+    .add_resource::<CountFrames>()
     .add_systems(Start, start)
     .add_systems(Update, update)
     .into_schema();
@@ -21,8 +22,12 @@ fn start(
     println!("Summoned a new entity {:?} with ", entity);
 }
 
-fn update() {
-    println!("TODO: spin the cube");
+#[derive(Reflect, Default)]
+pub struct CountFrames(u32);
+
+fn update(mut resource: ResMut<CountFrames>) {
+    println!("Update frame {}", resource.0);
+    resource.0 += 1;
 }
 
 // From bevy's `examples\3d\3d_shapes.rs`

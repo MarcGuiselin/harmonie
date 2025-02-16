@@ -20,7 +20,7 @@ pub mod prelude {
     pub use bevy_reflect_derive::*;
 
     pub use crate::ecs::{
-        system::{Commands, IntoSchedule, IntoSystemSet},
+        system::{Commands, IntoSchedule, IntoSystemSet, ResMut},
         Reflected, Resource,
     };
     pub use crate::schema::{Mod, Schema};
