@@ -31,7 +31,9 @@ resolver = "2"
 members = ["crates/*", "codegen/crates/*"]
 
 [workspace.dependencies]
-bitcode = { version = "0", features = ["derive"] }
+bitcode = { version = "0", features = [
+    "derive",
+], git = "https://github.com/MarcGuiselin/bitcode.git", branch = "bevy-integration" }
 async-channel = "2.3"
 async-process = "2.2"
 async-std = "1.12"
@@ -58,6 +60,7 @@ futures-lite = "2.5"
 notify = "7"
 petgraph = "0.6"
 rancor = "0.1"
+serde = "1.0"
 sha2 = "0.10"
 wasmer = "5.0"
 

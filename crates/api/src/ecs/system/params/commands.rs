@@ -1,4 +1,4 @@
-use bevy_reflect::Typed;
+use bevy_reflect::FromReflect;
 
 use crate::{
     ecs::system::{system_param::Params, SystemParam},
@@ -35,7 +35,7 @@ pub struct EntityCommands(u32);
 
 impl EntityCommands {
     // TODO: replace with insert<T: Bundle>(&mut self, bundle: T)
-    pub fn insert_component(&mut self, component: impl Typed) -> &mut Self {
+    pub fn insert_component(&mut self, component: impl FromReflect) -> &mut Self {
         let type_short_name = component.reflect_short_type_path();
         let crate_name = component.reflect_crate_name().unwrap_or("unknown");
         let value = serialize(&component);

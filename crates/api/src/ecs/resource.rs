@@ -1,23 +1,24 @@
-use bevy_reflect::{serde::TypedReflectSerializer, GetTypeRegistration, TypeRegistry, Typed};
+use bevy_reflect::{PartialReflect, Typed};
+
+use crate::runtime::serialize;
 
 pub trait Resource
 where
-    Self: Typed,
+    Self: Sized + Typed + PartialReflect,
 {
-    fn default_value_as_buffer() -> Vec<u8>;
+    fn default_value() -> Self;
+
+    fn default_value_as_buffer() -> Vec<u8> {
+        let value = Self::default_value();
+        serialize(&value)
+    }
 }
 
 impl<R> Resource for R
 where
-    R: Typed + GetTypeRegistration + Default,
+    R: Sized + Typed + PartialReflect + Default,
 {
-    fn default_value_as_buffer() -> Vec<u8> {
-        let mut registry = TypeRegistry::default();
-        registry.register::<R>();
-
-        let default = Self::default();
-        let serializer = TypedReflectSerializer::new(&default, &registry);
-
-        bitcode::serialize(&serializer).unwrap()
+    fn default_value() -> Self {
+        Self::default()
     }
 }

@@ -14,6 +14,7 @@ bevy_reflect_derive.workspace = true
 bevy_transform.workspace = true
 bevy_utils_proc_macros.workspace = true
 const_panic.workspace = true
+serde.workspace = true
 
 [features]
 generate_manifest = []

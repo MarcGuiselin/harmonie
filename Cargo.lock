@@ -853,12 +853,15 @@ name = "bevy_harmonize_api"
 version = "0.0.0"
 dependencies = [
  "bevy_harmonize_common",
+ "bevy_math",
  "bevy_reflect",
  "bevy_reflect_derive",
+ "bevy_transform",
  "bevy_utils_proc_macros",
  "bitcode",
  "const_panic",
  "const_vec",
+ "serde",
 ]
 
 [[package]]
@@ -1523,9 +1526,8 @@ checksum = "5e764a1d40d510daf35e07be9eb06e75770908c27d411ee6c92109c9840eaaf7"
 
 [[package]]
 name = "bitcode"
-version = "0.6.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee1bce7608560cd4bf0296a4262d0dbf13e6bcec5ff2105724c8ab88cc7fc784"
+version = "0.6.4"
+source = "git+https://github.com/MarcGuiselin/bitcode.git?branch=bevy-integration#f54cfbf5903197879c48b87fa4dae8c55a96128b"
 dependencies = [
  "arrayvec",
  "bitcode_derive",
@@ -1536,9 +1538,8 @@ dependencies = [
 
 [[package]]
 name = "bitcode_derive"
-version = "0.6.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a539389a13af092cd345a2b47ae7dec12deb306d660b2223d25cd3419b253ebe"
+version = "0.6.4"
+source = "git+https://github.com/MarcGuiselin/bitcode.git?branch=bevy-integration#f54cfbf5903197879c48b87fa4dae8c55a96128b"
 dependencies = [
  "proc-macro2",
  "quote 1.0.38",
