@@ -1,9 +1,15 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
 
-    crane.url = "github:ipetkov/crane";
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs = {
+        flake-utils.follows = "flake-utils";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
       inputs = {
@@ -14,24 +20,21 @@
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.rust-analyzer-src.follows = "";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay, crane, fenix }:
+  outputs = { self, nixpkgs, crane, fenix, flake-utils, rust-overlay }:
     flake-utils.lib.eachDefaultSystem
       (system:
         let
-          overlays = [ (import rust-overlay) ];
           pkgs = import nixpkgs {
-            inherit system overlays;
+            inherit system;
+            overlays = [ (import rust-overlay) ];
           };
-          craneLib = (crane.mkLib pkgs).overrideToolchain (fenix.packages.${system}.complete.withComponents [
-            "cargo"
-            "llvm-tools"
-            "rustc"
-            "rust-src"
-            "rustfmt"
-          ]);
+          inherit (pkgs) lib;
+          craneLib = (crane.mkLib pkgs).overrideToolchain
+            fenix.packages.${system}.fromManifestFile ./rust-toolchain.toml;
           buildInputs = with pkgs; [
             # Dev tools
             nixd

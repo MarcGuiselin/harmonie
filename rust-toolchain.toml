@@ -1,2 +1,11 @@
 [toolchain]
 channel = "nightly"
+components = [
+    "cargo",
+    "llvm-tools",
+    "rustc",
+    "rust-src",
+    "rustfmt",
+    # "rust-analyzer",
+]
+targets = ["wasm32-unknown-unknown"]
