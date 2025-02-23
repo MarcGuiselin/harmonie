@@ -1,0 +1,11 @@
+[package]
+name = "wasmtest"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+#zerocopy.workspace = true
+#zerocopy-derive.workspace = true
